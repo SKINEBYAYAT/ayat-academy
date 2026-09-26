@@ -6,7 +6,7 @@ import { createServer } from 'node:net';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { User, Session, TrustedDevice, VerificationCode, RateLimit } from '../../src/lib/db/models/auth';
-import { Enrollment, Course, Level, Section, Lesson } from '../../src/lib/db/models/courses';
+import { Enrollment, Course, Level, Section, Lesson, CourseProgress } from '../../src/lib/db/models/courses';
 import { hashToken, hashPassword, newToken } from '../../src/lib/auth/crypto';
 import { rateLimit } from '../../src/lib/auth/rate-limit';
 
@@ -288,6 +288,104 @@ test('Phase 1 production HTTP and MongoDB security integration', { timeout: 3000
     assert.equal(await Level.countDocuments({ courseId }), 0);
     assert.equal(await Section.countDocuments({ courseId }), 0);
     assert.equal(await Lesson.countDocuments({ courseId }), 0);
+  });
+
+  await t.test('Phase 3 student access, learning progress, and completion are enforced server-side', async () => {
+    assert.ok(adminCookie);
+    const student = await User.findOne({ email: account.email });
+    assert.ok(student);
+
+    const course = await Course.create({
+      title: 'Student Learning Course',
+      slug: 'student-learning-course',
+      priceMinor: 10000,
+      currency: 'USD',
+      published: true,
+    });
+    const level = await Level.create({ courseId: course._id, title: 'Published Level', published: true, order: 0 });
+    const section = await Section.create({ courseId: course._id, levelId: level._id, title: 'Published Section', published: true, order: 0 });
+    const requiredLesson = await Lesson.create({
+      courseId: course._id, levelId: level._id, sectionId: section._id,
+      title: 'Required Lesson', content: 'Learn', published: true, required: true, order: 0,
+    });
+    const optionalLesson = await Lesson.create({
+      courseId: course._id, levelId: level._id, sectionId: section._id,
+      title: 'Optional Lesson', content: 'Bonus', published: true, required: false, order: 1,
+    });
+    const draftLesson = await Lesson.create({
+      courseId: course._id, levelId: level._id, sectionId: section._id,
+      title: 'Draft Lesson', content: 'Hidden', published: false, required: true, order: 2,
+    });
+
+    const denied = await fetch(base + '/api/learning/courses/' + course._id + '/progress', {
+      method: 'PATCH',
+      headers: { origin, 'content-type': 'application/json', cookie: studentCookie },
+      body: JSON.stringify({ currentLessonId: String(requiredLesson._id) }),
+    });
+    assert.equal(denied.status, 403);
+
+    const grant = await fetch(base + '/api/admin/students/' + student._id + '/courses', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({ courseId: String(course._id), action: 'grant' }),
+    });
+    assert.equal(grant.status, 200);
+
+    const dashboard = await fetch(base + '/dashboard', { headers: { cookie: studentCookie } });
+    assert.equal(dashboard.status, 200);
+    const dashboardHtml = await dashboard.text();
+    assert.ok(dashboardHtml.includes('Student Learning Course'));
+
+    const startProgress = await fetch(base + '/api/learning/courses/' + course._id + '/progress', {
+      method: 'PATCH',
+      headers: { origin, 'content-type': 'application/json', cookie: studentCookie },
+      body: JSON.stringify({ currentLessonId: String(requiredLesson._id), videoPositionSeconds: 42 }),
+    });
+    assert.equal(startProgress.status, 200);
+
+    const hiddenDraft = await fetch(base + '/api/learning/courses/' + course._id + '/progress', {
+      method: 'PATCH',
+      headers: { origin, 'content-type': 'application/json', cookie: studentCookie },
+      body: JSON.stringify({ currentLessonId: String(draftLesson._id) }),
+    });
+    assert.equal(hiddenDraft.status, 404);
+
+    const completeRequired = await fetch(base + '/api/learning/courses/' + course._id + '/progress', {
+      method: 'PATCH',
+      headers: { origin, 'content-type': 'application/json', cookie: studentCookie },
+      body: JSON.stringify({ currentLessonId: String(requiredLesson._id), completedLessonId: String(requiredLesson._id) }),
+    });
+    assert.equal(completeRequired.status, 200);
+    const completion = await completeRequired.json();
+    assert.equal(completion.progress.percentage, 100);
+    assert.ok(completion.progress.completedAt);
+
+    const stored = await CourseProgress.findOne({ userId: student._id, courseId: course._id });
+    assert.ok(stored);
+    assert.equal(stored?.videoPositions?.get(String(requiredLesson._id)), 42);
+    assert.ok(stored?.completedLessonIds.map(String).includes(String(requiredLesson._id)));
+    assert.equal(stored?.completedLessonIds.map(String).includes(String(optionalLesson._id)), false);
+
+    const lessonPage = await fetch(base + '/learn/student-learning-course/' + requiredLesson._id, { headers: { cookie: studentCookie } });
+    assert.equal(lessonPage.status, 200);
+    const lessonHtml = await lessonPage.text();
+    assert.ok(lessonHtml.includes('Required Lesson'));
+    assert.ok(lessonHtml.includes('Optional Lesson'));
+    assert.equal(lessonHtml.includes('Draft Lesson'), false);
+
+    const revoke = await fetch(base + '/api/admin/students/' + student._id + '/courses', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({ courseId: String(course._id), action: 'revoke' }),
+    });
+    assert.equal(revoke.status, 200);
+
+    const deniedAfterRevoke = await fetch(base + '/api/learning/courses/' + course._id + '/progress', {
+      method: 'PATCH',
+      headers: { origin, 'content-type': 'application/json', cookie: studentCookie },
+      body: JSON.stringify({ currentLessonId: String(requiredLesson._id) }),
+    });
+    assert.equal(deniedAfterRevoke.status, 403);
   });
 
   await t.test('expired codes and exhausted attempts cannot authenticate', async () => {
