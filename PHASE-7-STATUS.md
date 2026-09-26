@@ -27,7 +27,7 @@ The service worker intentionally does not cache API, admin, dashboard, learning,
 
 ## Deployment retry
 
-Triggered a fresh preview deployment after Vercel space/quota was cleared.
+Triggered another fresh preview deployment after the user cleared Vercel space/quota.
 
 ## Final verification
 
