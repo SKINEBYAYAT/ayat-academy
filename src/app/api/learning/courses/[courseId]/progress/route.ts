@@ -5,6 +5,7 @@ import { requireUser } from '@/lib/auth/session';
 import { CourseProgress, Lesson } from '@/lib/db/models/courses';
 import { getPublishedCourseTree, progressStats, requireCourseAccess } from '@/lib/learning/service';
 import { errorResponse, HttpError, readJson, sameOrigin } from '@/lib/http';
+import { ensureCertificateForCompletion } from '@/lib/certificates/service';
 
 const schema = z.object({
   currentLessonId: z.string().regex(/^[a-f\d]{24}$/i).optional(),
@@ -57,6 +58,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ cours
     );
 
     const stats = progressStats(tree.lessons, progress.completedLessonIds ?? []);
+    let certificateId: string | null = null;
     if (stats.requiredCount > 0 && stats.percentage === 100 && !progress.completedAt) {
       progress.completedAt = new Date();
       await progress.save();
@@ -65,12 +67,18 @@ export async function PATCH(request: Request, context: { params: Promise<{ cours
       await progress.save();
     }
 
+    if (stats.requiredCount > 0 && stats.percentage === 100 && course.certificateEnabled) {
+      const certificate = await ensureCertificateForCompletion(user._id, course._id);
+      certificateId = certificate?.certificateId ?? null;
+    }
+
     return NextResponse.json({
       progress: {
         currentLessonId: progress.currentLessonId ? String(progress.currentLessonId) : null,
         completedLessonIds: (progress.completedLessonIds ?? []).map(String),
         percentage: stats.percentage,
         completedAt: progress.completedAt ?? null,
+        certificateId,
       },
     });
   } catch (error) {
