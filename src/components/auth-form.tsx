@@ -21,13 +21,16 @@ const copy: Record<Mode, { title: string; intro: string; submit: string }> = {
   reset: { title: 'A fresh start.', intro: 'Choose a strong, unique password. Updating it will sign you out on all your devices.', submit: 'Save new password' },
 };
 
-export function AuthForm({ mode }: { mode: Mode }) {
+export function AuthForm({ mode, next = '' }: { mode: Mode; next?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const hash = useSyncExternalStore(subscribeHash, readHash, serverHash);
-  const token = new URLSearchParams(hash.slice(1)).get(mode === 'verify' ? 'challenge' : 'token') ?? '';
+  const hashParams = new URLSearchParams(hash.slice(1));
+  const token = hashParams.get(mode === 'verify' ? 'challenge' : 'token') ?? '';
+  const hashNext = hashParams.get('next') ?? '';
+  const safeNext = (mode === 'verify' ? hashNext : next).startsWith('/') && !(mode === 'verify' ? hashNext : next).startsWith('//') && !(mode === 'verify' ? hashNext : next).startsWith('/admin') ? (mode === 'verify' ? hashNext : next) : '';
   const [cooldown, setCooldown] = useState(60);
   const [done, setDone] = useState(false);
   // Fragments never reach server access logs or Referer headers.
@@ -53,8 +56,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
     if (mode === 'reset') data.token = token;
     try {
       const result = await request(mode, data);
-      if (result.challenge) router.push(`/verify#challenge=${encodeURIComponent(result.challenge)}`);
-      else if (result.redirect) { router.replace(result.redirect); router.refresh(); }
+      if (result.challenge) router.push(`/verify#challenge=${encodeURIComponent(result.challenge)}${safeNext ? `&next=${encodeURIComponent(safeNext)}` : ''}`);
+      else if (result.redirect) { router.replace(result.redirect === '/dashboard' && safeNext ? safeNext : result.redirect); router.refresh(); }
       else { setMessage(result.message); if (mode === 'reset') { setDone(true); window.history.replaceState(null, '', '/reset-password'); } }
     } catch (err) { setError(err instanceof Error ? err.message : 'Unable to connect. Please try again.'); }
     finally { setBusy(false); }
@@ -80,8 +83,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
     </>}
   </form>
   {mode === 'verify' && <p className="form-foot">Didn’t receive a code? <button className="resend" onClick={resend} disabled={busy || cooldown > 0 || !token}>{cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}</button><br /><Link className="text-link" href="/login">Start again with a new sign-in</Link></p>}
-  {mode === 'register' && <p className="form-foot">Already have an account? <Link className="text-link" href="/login">Sign in</Link></p>}
-  {mode === 'login' && <p className="form-foot">New to the academy? <Link className="text-link" href="/register">Create an account</Link></p>}
+  {mode === 'register' && <p className="form-foot">Already have an account? <Link className="text-link" href={safeNext ? '/login?next=' + encodeURIComponent(safeNext) : '/login'}>Sign in</Link></p>}
+  {mode === 'login' && <p className="form-foot">New to the academy? <Link className="text-link" href={safeNext ? '/register?next=' + encodeURIComponent(safeNext) : '/register'}>Create an account</Link></p>}
   {['forgot', 'reset'].includes(mode) && <p className="form-foot"><Link className="text-link" href={mode === 'reset' && !done ? '/forgot-password' : '/login'}>{mode === 'reset' && !done ? 'Request a new reset link' : 'Back to sign in'}</Link></p>}
   </>;
 }
