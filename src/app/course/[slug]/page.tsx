@@ -20,6 +20,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
   const lessonCount = await Lesson.countDocuments({ courseId: course._id, published: true });
   const price = course.salePriceMinor != null ? course.salePriceMinor : course.priceMinor;
+  const courseImage = course.coverImage || course.thumbnail || '';
 
   return <section className="course-detail">
     <div className="course-detail-hero">
@@ -31,7 +32,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
         <div className="course-detail-price">{course.salePriceMinor != null && <del>{(course.priceMinor / 100).toFixed(2)} {course.currency}</del>}<strong>{price === 0 ? 'Free' : (price / 100).toFixed(2) + ' ' + course.currency}</strong></div>
         <CheckoutButton courseId={String(course._id)} slug={course.slug} signedIn={Boolean(user)} alreadyOwned={Boolean(enrollment)} />
       </div>
-      <div className="course-detail-image">{course.coverImage || course.thumbnail ? <img src={course.coverImage || course.thumbnail} alt="" /> : <span>{course.title.slice(0, 1)}</span>}</div>
+      <div className="course-detail-image">{courseImage ? <img src={courseImage} alt="" /> : <span>{course.title.slice(0, 1)}</span>}</div>
     </div>
 
     <div className="course-detail-grid">
