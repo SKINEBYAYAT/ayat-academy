@@ -5,3 +5,6 @@ node_modules/
 *.tsbuildinfo
 coverage/
 .cache/
+
+# Local development media uploads
+public/uploads/

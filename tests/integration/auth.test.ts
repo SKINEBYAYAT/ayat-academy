@@ -6,7 +6,7 @@ import { createServer } from 'node:net';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { User, Session, TrustedDevice, VerificationCode, RateLimit } from '../../src/lib/db/models/auth';
-import { Enrollment } from '../../src/lib/db/models/courses';
+import { Enrollment, Course, Level, Section, Lesson } from '../../src/lib/db/models/courses';
 import { hashToken, hashPassword, newToken } from '../../src/lib/auth/crypto';
 import { rateLimit } from '../../src/lib/auth/rate-limit';
 
@@ -65,6 +65,7 @@ test('Phase 1 production HTTP and MongoDB security integration', { timeout: 3000
   let challenge = '';
   let studentCookie = '';
   let deviceCookie = '';
+  let adminCookie = '';
 
   await t.test('all public pages render; protected pages and APIs reject anonymous access', async () => {
     for (const page of ['/', '/register', '/login', '/verify', '/forgot-password', '/reset-password']) {
@@ -140,11 +141,155 @@ test('Phase 1 production HTTP and MongoDB security integration', { timeout: 3000
     await setKnownCode(adminChallenge);
     const verified = await post('verify', { challenge: adminChallenge, code: '123456', trustDevice: true }); assert.equal(verified.status, 200);
     assert.equal(cookieValue(verified, '__Host-ayat-device'), '');
-    const adminCookie = cookieValue(verified, '__Host-ayat-session');
+    adminCookie = cookieValue(verified, '__Host-ayat-session');
     assert.equal((await fetch(base + '/api/admin/overview', { headers: { cookie: adminCookie } })).status, 200);
     assert.equal((await fetch(base + '/admin', { headers: { cookie: adminCookie } })).status, 200);
     const session = await Session.findOne({ userId: admin._id }); assert.ok(session); assert.ok(session.expiresAt.getTime() - Date.now() <= 3600000);
   });
+  await t.test('Phase 2 course administration is admin-only and preserves hierarchy integrity', async () => {
+    assert.ok(adminCookie);
+
+    const studentCreate = await fetch(base + '/api/admin/courses', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json', cookie: studentCookie },
+      body: JSON.stringify({ title: 'Blocked Course', slug: 'blocked-course', priceMinor: 10000, currency: 'USD' }),
+    });
+    assert.equal(studentCreate.status, 403);
+
+    const anonymousList = await fetch(base + '/api/admin/courses');
+    assert.equal(anonymousList.status, 401);
+
+    const createCourse = await fetch(base + '/api/admin/courses', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({
+        title: 'Professional Skincare',
+        slug: 'professional-skincare',
+        shortDescription: 'Professional training',
+        priceMinor: 30000,
+        salePriceMinor: 10000,
+        currency: 'USD',
+        published: false,
+        featured: true,
+        requirements: ['Basic skincare interest'],
+        learningOutcomes: ['Analyze skin'],
+        instructorName: 'Ayat',
+        instructorBio: 'Skincare specialist',
+        estimatedMinutes: 600,
+        certificateEnabled: true,
+        order: 0,
+      }),
+    });
+    assert.equal(createCourse.status, 201);
+    const createdCourse = await createCourse.json();
+    const courseId = createdCourse.course.id as string;
+
+    const duplicateSlug = await fetch(base + '/api/admin/courses', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({ title: 'Duplicate', slug: 'professional-skincare', priceMinor: 1000, currency: 'USD' }),
+    });
+    assert.equal(duplicateSlug.status, 409);
+
+    async function content(body: object) {
+      return fetch(base + '/api/admin/courses/' + courseId + '/content', {
+        method: 'POST',
+        headers: { origin, 'content-type': 'application/json', cookie: adminCookie },
+        body: JSON.stringify(body),
+      });
+    }
+
+    const levelOneResponse = await content({ action: 'createLevel', data: { title: 'Skin Fundamentals', description: '', published: true, order: 0 } });
+    assert.equal(levelOneResponse.status, 201);
+    const levelOne = (await levelOneResponse.json()).item;
+    const levelTwoResponse = await content({ action: 'createLevel', data: { title: 'Advanced Skin', description: '', published: false, order: 1 } });
+    assert.equal(levelTwoResponse.status, 201);
+    const levelTwo = (await levelTwoResponse.json()).item;
+
+    const sectionOneResponse = await content({ action: 'createSection', data: { levelId: levelOne._id, title: 'Skin Types', description: '', published: true, order: 0 } });
+    assert.equal(sectionOneResponse.status, 201);
+    const sectionOne = (await sectionOneResponse.json()).item;
+    const sectionTwoResponse = await content({ action: 'createSection', data: { levelId: levelOne._id, title: 'Skin Structure', description: '', published: false, order: 1 } });
+    assert.equal(sectionTwoResponse.status, 201);
+    const sectionTwo = (await sectionTwoResponse.json()).item;
+
+    const forgedSection = await content({ action: 'createSection', data: { levelId: new mongoose.Types.ObjectId().toString(), title: 'Forged', description: '', published: false, order: 0 } });
+    assert.equal(forgedSection.status, 400);
+
+    const lessonOneResponse = await content({ action: 'createLesson', data: {
+      levelId: levelOne._id, sectionId: sectionOne._id, title: 'Understanding Skin Types', description: '',
+      content: '**Safe markdown**', videoAssetId: '', durationSeconds: 300, preview: true, published: true, required: true, order: 0,
+      resources: [{ title: 'Worksheet', privateAssetId: 'local-dev:resource:worksheet.pdf' }],
+    } });
+    assert.equal(lessonOneResponse.status, 201);
+    const lessonOne = (await lessonOneResponse.json()).item;
+
+    const lessonTwoResponse = await content({ action: 'createLesson', data: {
+      levelId: levelOne._id, sectionId: sectionOne._id, title: 'Second Lesson', description: '',
+      content: '', videoAssetId: '', durationSeconds: null, preview: false, published: false, required: true, order: 1, resources: [],
+    } });
+    assert.equal(lessonTwoResponse.status, 201);
+    const lessonTwo = (await lessonTwoResponse.json()).item;
+
+    const forgedLesson = await content({ action: 'createLesson', data: {
+      levelId: levelTwo._id, sectionId: sectionOne._id, title: 'Wrong hierarchy', description: '',
+      content: '', videoAssetId: '', durationSeconds: null, preview: false, published: false, required: true, order: 0, resources: [],
+    } });
+    assert.equal(forgedLesson.status, 400);
+
+    const reorderLessons = await content({ action: 'reorder', kind: 'lesson', ids: [lessonTwo._id, lessonOne._id] });
+    assert.equal(reorderLessons.status, 200);
+    assert.equal((await Lesson.findById(lessonTwo._id))?.order, 0);
+    assert.equal((await Lesson.findById(lessonOne._id))?.order, 1);
+
+    const crossSectionReorder = await content({ action: 'reorder', kind: 'section', ids: [sectionOne._id, sectionTwo._id] });
+    assert.equal(crossSectionReorder.status, 200);
+    assert.equal((await Section.findById(sectionOne._id))?.order, 0);
+    assert.equal((await Section.findById(sectionTwo._id))?.order, 1);
+
+    const patchCourse = await fetch(base + '/api/admin/courses/' + courseId, {
+      method: 'PATCH',
+      headers: { origin, 'content-type': 'application/json', cookie: adminCookie },
+      body: JSON.stringify({ published: true, title: 'Professional Skincare Updated' }),
+    });
+    assert.equal(patchCourse.status, 200);
+    assert.equal((await Course.findById(courseId))?.published, true);
+
+    const duplicated = await fetch(base + '/api/admin/courses/' + courseId + '/duplicate', {
+      method: 'POST',
+      headers: { origin, 'content-type': 'application/json', cookie: adminCookie },
+      body: '{}',
+    });
+    assert.equal(duplicated.status, 201);
+    const duplicate = (await duplicated.json()).course;
+    assert.notEqual(duplicate.id, courseId);
+    assert.equal(duplicate.slug, 'professional-skincare-copy');
+    assert.equal((await Course.findById(duplicate.id))?.published, false);
+    assert.equal(await Level.countDocuments({ courseId: duplicate.id }), 2);
+    assert.equal(await Section.countDocuments({ courseId: duplicate.id }), 2);
+    assert.equal(await Lesson.countDocuments({ courseId: duplicate.id }), 2);
+
+    const deleteSection = await content({ action: 'deleteSection', id: sectionOne._id });
+    assert.equal(deleteSection.status, 200);
+    assert.equal(await Lesson.countDocuments({ courseId, sectionId: sectionOne._id }), 0);
+
+    const deleteLevel = await content({ action: 'deleteLevel', id: levelOne._id });
+    assert.equal(deleteLevel.status, 200);
+    assert.equal(await Section.countDocuments({ courseId, levelId: levelOne._id }), 0);
+    assert.equal(await Lesson.countDocuments({ courseId, levelId: levelOne._id }), 0);
+
+    const deleteCourse = await fetch(base + '/api/admin/courses/' + courseId, {
+      method: 'DELETE',
+      headers: { origin, 'content-type': 'application/json', cookie: adminCookie },
+      body: '{}',
+    });
+    assert.equal(deleteCourse.status, 200);
+    assert.equal(await Course.countDocuments({ _id: courseId }), 0);
+    assert.equal(await Level.countDocuments({ courseId }), 0);
+    assert.equal(await Section.countDocuments({ courseId }), 0);
+    assert.equal(await Lesson.countDocuments({ courseId }), 0);
+  });
+
   await t.test('expired codes and exhausted attempts cannot authenticate', async () => {
     const user = await User.findOne({ email: account.email }); assert.ok(user);
     const expired = newToken();
