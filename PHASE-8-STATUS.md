@@ -43,3 +43,5 @@ Manual QA should include:
 - PWA install on iPhone and Android
 - robots.txt and sitemap.xml
 - mobile and desktop layouts
+
+Retried preview deployment after the latest TypeScript fix.
