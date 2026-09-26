@@ -9,6 +9,8 @@ export async function POST(request: Request, context: { params: Promise<{ course
     await requireUser(true);
     const { courseId } = await context.params;
     const course = await duplicateCourse(courseId);
-    return NextResponse.json({ course: { id: String(course._id), slug: course.slug } }, { status: 201 });
-  } catch (error) { return errorResponse(error); }
+    return NextResponse.json({ course }, { status: 201 });
+  } catch (error) {
+    return errorResponse(error);
+  }
 }
