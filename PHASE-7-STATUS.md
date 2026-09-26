@@ -25,6 +25,10 @@ Development branch: `phase7-pwa-seo-polish`
 
 The service worker intentionally does not cache API, admin, dashboard, learning, checkout, authentication, or password-reset routes.
 
+## Deployment retry
+
+Triggered a fresh preview deployment after Vercel space/quota was cleared.
+
 ## Final verification
 
 Before merging:
