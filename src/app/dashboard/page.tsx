@@ -5,7 +5,7 @@ import { requirePageUser } from '@/lib/auth/session';
 import { LogoutButton, ProfileForm } from '@/components/account-actions';
 import { listStudentCourses } from '@/lib/learning/service';
 
-export const metadata: Metadata = { title: 'Your learning space' };
+export const metadata: Metadata = { title: 'Your learning space', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
