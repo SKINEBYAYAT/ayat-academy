@@ -91,4 +91,5 @@ Import this project with the Next.js preset, configure the required server envir
 
 Phase 2 must wait until the Phase 1 checks pass. Course CRUD, learning/player/progress, enrollment management, checkout/payment providers, certificates/PDFs, PWA, and the complete public marketing site remain later-phase work.
 #   a y a t - a c a d e m y  
+ #   a y a t - a c a d e m y  
  
