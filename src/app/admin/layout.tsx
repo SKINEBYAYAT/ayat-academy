@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { requirePageUser } from '@/lib/auth/session';
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export const dynamic = 'force-dynamic';
 
