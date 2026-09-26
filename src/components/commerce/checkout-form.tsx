@@ -3,19 +3,28 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+type Method = 'card' | 'usdt';
+
 export function CheckoutForm({
   courseId,
   priceLabel,
+  availability,
 }: {
   courseId: string;
   priceLabel: string;
+  availability: {
+    card: { enabled: boolean; reason: string };
+    usdt: { enabled: boolean };
+  };
 }) {
   const router = useRouter();
-  const [method, setMethod] = useState<'whish' | 'card' | 'usdt'>('whish');
+  const firstEnabled: Method | null = availability.usdt.enabled ? 'usdt' : availability.card.enabled ? 'card' : null;
+  const [method, setMethod] = useState<Method | null>(firstEnabled);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   async function submit() {
+    if (!method) return;
     setBusy(true);
     setError('');
     try {
@@ -34,23 +43,21 @@ export function CheckoutForm({
     }
   }
 
+  function option(value: Method, title: string, enabled: boolean, note: string) {
+    return <label className={method === value ? 'checkout-method selected' : enabled ? 'checkout-method' : 'checkout-method disabled'}>
+      <input type="radio" name="payment" checked={method === value} disabled={!enabled} onChange={() => setMethod(value)} />
+      <div><strong>{title}</strong><span>{note}</span></div>
+    </label>;
+  }
+
   return <div className="checkout-form">
     <div className="checkout-methods">
-      <label className={method === 'whish' ? 'checkout-method selected' : 'checkout-method'}>
-        <input type="radio" name="payment" checked={method === 'whish'} onChange={() => setMethod('whish')} />
-        <div><strong>Whish Pay</strong><span>Official API integration comes in Phase 5.</span></div>
-      </label>
-      <label className={method === 'card' ? 'checkout-method selected' : 'checkout-method'}>
-        <input type="radio" name="payment" checked={method === 'card'} onChange={() => setMethod('card')} />
-        <div><strong>Visa / Card</strong><span>Card provider integration comes in Phase 5.</span></div>
-      </label>
-      <label className={method === 'usdt' ? 'checkout-method selected' : 'checkout-method'}>
-        <input type="radio" name="payment" checked={method === 'usdt'} onChange={() => setMethod('usdt')} />
-        <div><strong>USDT</strong><span>Wallet instructions and verification come in Phase 5.</span></div>
-      </label>
+      {option('card', 'Visa / Card', availability.card.enabled, availability.card.enabled ? 'Pay securely by card.' : availability.card.reason)}
+      {option('usdt', 'USDT', availability.usdt.enabled, availability.usdt.enabled ? 'Send USDT and submit the transaction hash for verification.' : 'USDT is not configured yet.')}
     </div>
     {error && <div className="notice error">{error}</div>}
-    <button className="button checkout-submit" disabled={busy} onClick={submit}>{busy ? 'Creating order…' : 'Continue · ' + priceLabel}</button>
-    <p className="checkout-note">Creating an order never grants access by itself. Access is granted only after a payment is verified as paid.</p>
+    {!firstEnabled && <div className="notice error">No payment method is currently available. Please try again later.</div>}
+    <button className="button checkout-submit" disabled={busy || !method} onClick={submit}>{busy ? 'Creating order…' : 'Continue · ' + priceLabel}</button>
+    <p className="checkout-note">Course access is granted only after a payment is verified as paid.</p>
   </div>;
 }

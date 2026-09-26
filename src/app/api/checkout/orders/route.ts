@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireUser } from '@/lib/auth/session';
 import { createOrReuseOrder } from '@/lib/commerce/orders';
-import { errorResponse, readJson, sameOrigin } from '@/lib/http';
+import { errorResponse, HttpError, readJson, sameOrigin } from '@/lib/http';
+import { getPaymentMethodState } from '@/lib/commerce/payment-methods';
 
 const schema = z.object({
   courseId: z.string().regex(/^[a-f\d]{24}$/i),
@@ -14,6 +15,10 @@ export async function POST(request: Request) {
     sameOrigin(request);
     const user = await requireUser();
     const input = schema.parse(await readJson(request));
+    const methods = await getPaymentMethodState();
+    if (input.paymentMethod === 'usdt' && !methods.usdt.enabled) throw new HttpError(503, 'USDT payments are not configured.');
+    if (input.paymentMethod === 'whish' && !methods.whish.enabled) throw new HttpError(503, methods.whish.reason);
+    if (input.paymentMethod === 'card' && !methods.card.enabled) throw new HttpError(503, methods.card.reason);
     const result = await createOrReuseOrder(user._id, input.courseId, input.paymentMethod);
 
     if (result.alreadyOwned) {

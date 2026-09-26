@@ -13,7 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/courses">Courses</Link>
         <Link href="/admin/students">Students</Link>
         <Link href="/admin/payments">Orders</Link>
-        <span className="admin-nav-disabled">Settings · later</span>
+        <Link href="/admin/settings">Settings</Link>
       </nav>
       <Link className="text-link" href="/dashboard">Student dashboard</Link>
     </aside>
