@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requirePageUser } from '@/lib/auth/session';
 import { Course, Enrollment } from '@/lib/db/models/courses';
 import { CheckoutForm } from '@/components/commerce/checkout-form';
+import { getPaymentMethodState } from '@/lib/commerce/payment-methods';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
 
   const amount = course.salePriceMinor != null ? course.salePriceMinor : course.priceMinor;
   const priceLabel = amount === 0 ? 'Free' : (amount / 100).toFixed(2) + ' ' + course.currency;
+  const methods = await getPaymentMethodState();
 
   return <section className="checkout-page">
     <div className="checkout-course-summary">
@@ -36,7 +38,11 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
 
     <div className="panel checkout-panel">
       <h2>Choose payment method</h2>
-      <CheckoutForm courseId={String(course._id)} priceLabel={priceLabel} />
+      <CheckoutForm courseId={String(course._id)} priceLabel={priceLabel} availability={{
+        whish: { enabled: methods.whish.enabled, reason: methods.whish.reason },
+        card: { enabled: methods.card.enabled, reason: methods.card.reason },
+        usdt: { enabled: methods.usdt.enabled },
+      }} />
     </div>
   </section>;
 }
