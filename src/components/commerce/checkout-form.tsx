@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-type Method = 'whish' | 'card' | 'usdt';
+type Method = 'card' | 'usdt';
 
 export function CheckoutForm({
   courseId,
@@ -13,13 +13,12 @@ export function CheckoutForm({
   courseId: string;
   priceLabel: string;
   availability: {
-    whish: { enabled: boolean; reason: string };
     card: { enabled: boolean; reason: string };
     usdt: { enabled: boolean };
   };
 }) {
   const router = useRouter();
-  const firstEnabled: Method | null = availability.usdt.enabled ? 'usdt' : availability.whish.enabled ? 'whish' : availability.card.enabled ? 'card' : null;
+  const firstEnabled: Method | null = availability.usdt.enabled ? 'usdt' : availability.card.enabled ? 'card' : null;
   const [method, setMethod] = useState<Method | null>(firstEnabled);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -53,7 +52,6 @@ export function CheckoutForm({
 
   return <div className="checkout-form">
     <div className="checkout-methods">
-      {option('whish', 'Whish Pay', availability.whish.enabled, availability.whish.enabled ? 'Pay securely with your Whish balance.' : availability.whish.reason)}
       {option('card', 'Visa / Card', availability.card.enabled, availability.card.enabled ? 'Pay securely by card.' : availability.card.reason)}
       {option('usdt', 'USDT', availability.usdt.enabled, availability.usdt.enabled ? 'Send USDT and submit the transaction hash for verification.' : 'USDT is not configured yet.')}
     </div>
