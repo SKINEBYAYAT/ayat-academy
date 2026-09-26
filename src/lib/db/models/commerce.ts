@@ -8,6 +8,7 @@ const orderSchema = new Schema({
 }, { timestamps: true });
 orderSchema.index({ paymentMethod: 1, providerTransactionId: 1 }, { unique: true, partialFilterExpression: { providerTransactionId: { $type: 'string' } } });
 orderSchema.index({ userId: 1, courseId: 1, paymentStatus: 1, createdAt: -1 });
+orderSchema.index({ paymentMethod: 1, transactionHash: 1 }, { unique: true, partialFilterExpression: { paymentMethod: 'usdt', transactionHash: { $type: 'string' } } });
 export const Order = (models.Order as Model<InferSchemaType<typeof orderSchema>>) || model('Order', orderSchema);
 const paymentSchema = new Schema({ orderId: { type: Schema.Types.ObjectId, required: true, index: true }, provider: { type: String, required: true }, eventId: { type: String, required: true }, status: String, verifiedAt: Date }, { timestamps: true });
 paymentSchema.index({ provider: 1, eventId: 1 }, { unique: true });
