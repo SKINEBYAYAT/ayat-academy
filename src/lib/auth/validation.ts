@@ -1,6 +1,6 @@
 import { z } from 'zod';
 export const email = z.string().trim().email().max(254).transform(value => value.toLowerCase());
-export const password = z.string().min(12, 'Use at least 12 characters.').refine(value => Buffer.byteLength(value, 'utf8') <= 72, 'Password must be at most 72 UTF-8 bytes.');
+export const password = z.string().min(8, 'Use at least 8 characters.').refine(value => Buffer.byteLength(value, 'utf8') <= 72, 'Password must be at most 72 UTF-8 bytes.');
 export const fullName = z.string().trim().min(2).max(100);
 export const registerSchema = z.object({ fullName, email, password, passwordConfirmation: z.string() }).refine(value => value.password === value.passwordConfirmation, { message: 'Passwords do not match.', path: ['passwordConfirmation'] });
 export const loginSchema = z.object({ email, password: z.string().min(1).max(200) });
