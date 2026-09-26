@@ -3,9 +3,69 @@ import Link from 'next/link';
 import { BookOpen } from 'lucide-react';
 import { requirePageUser } from '@/lib/auth/session';
 import { LogoutButton, ProfileForm } from '@/components/account-actions';
+import { listStudentCourses } from '@/lib/learning/service';
+
 export const metadata: Metadata = { title: 'Your learning space' };
 export const dynamic = 'force-dynamic';
+
 export default async function Dashboard() {
   const user = await requirePageUser();
-  return <section className="workspace"><div className="workspace-head"><div><span className="eyebrow">Your personal academy</span><h1>Hello, {user.fullName.split(' ')[0]}.</h1><p>Good things begin with a little curiosity.</p></div><div className="actions">{user.role === 'admin' && <Link className="button secondary small" href="/admin">Administration</Link>}<LogoutButton /></div></div><div className="workspace-grid"><section className="panel"><h2>Your learning space</h2><div className="empty-state"><span className="empty-icon"><BookOpen size={28} aria-hidden="true" /></span><h3>A new chapter awaits.</h3><p>Your account is ready. Course enrollment and your learning dashboard will become available when the academy launches its courses.</p></div></section><section className="panel"><h2>Your profile</h2><dl className="account-details"><dt>Email address</dt><dd>{user.email}</dd><dt>Account</dt><dd>{user.role === 'admin' ? 'Administrator' : 'Student'} · Email verified</dd></dl><ProfileForm name={user.fullName} /><p className="form-foot"><Link className="text-link" href="/forgot-password">Reset your password</Link></p></section></div></section>;
+  const courses = await listStudentCourses(user._id);
+
+  return <section className="workspace">
+    <div className="workspace-head">
+      <div>
+        <span className="eyebrow">Your personal academy</span>
+        <h1>Hello, {user.fullName.split(' ')[0]}.</h1>
+        <p>Continue where you left off, or begin something new.</p>
+      </div>
+      <div className="actions">
+        {user.role === 'admin' && <Link className="button secondary small" href="/admin">Administration</Link>}
+        <LogoutButton />
+      </div>
+    </div>
+
+    <div className="workspace-grid">
+      <section className="panel student-course-panel">
+        <h2>My courses</h2>
+        {courses.length === 0 ? <div className="empty-state">
+          <span className="empty-icon"><BookOpen size={28} aria-hidden="true" /></span>
+          <h3>No courses yet.</h3>
+          <p>Once you purchase a course or an administrator grants you access, it will appear here.</p>
+        </div> : <div className="student-course-grid">
+          {courses.map(({ course, progress, percentage, completed, lessonCount }) => {
+            const href = progress?.currentLessonId
+              ? '/learn/' + course.slug + '/' + progress.currentLessonId
+              : '/learn/' + course.slug;
+            return <article className="student-course-card" key={String(course._id)}>
+              <div className="student-course-image">
+                {course.thumbnail ? <img src={course.thumbnail} alt="" /> : <span>{course.title.slice(0, 1).toUpperCase()}</span>}
+              </div>
+              <div className="student-course-copy">
+                <div className="status-row">
+                  {completed && <span className="status-badge published">Completed</span>}
+                  {!completed && percentage > 0 && <span className="status-badge">In progress</span>}
+                </div>
+                <h3>{course.title}</h3>
+                <p>{course.shortDescription || 'Continue your learning journey.'}</p>
+                <div className="student-progress-row"><span>{percentage}%</span><span>{lessonCount} lessons</span></div>
+                <div className="student-progress-bar"><i style={{ width: percentage + '%' }} /></div>
+                <Link className="button small" href={href}>{percentage > 0 ? 'Continue learning' : 'Start course'}</Link>
+              </div>
+            </article>;
+          })}
+        </div>}
+      </section>
+
+      <section className="panel">
+        <h2>Your profile</h2>
+        <dl className="account-details">
+          <dt>Email address</dt><dd>{user.email}</dd>
+          <dt>Account</dt><dd>{user.role === 'admin' ? 'Administrator' : 'Student'} · Email verified</dd>
+        </dl>
+        <ProfileForm name={user.fullName} />
+        <p className="form-foot"><Link className="text-link" href="/forgot-password">Reset your password</Link></p>
+      </section>
+    </div>
+  </section>;
 }
