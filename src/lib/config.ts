@@ -1,12 +1,19 @@
 import { HttpError } from '@/lib/http';
 
+export function getAppUrl() {
+  const explicit = process.env.APP_URL?.trim();
+  const vercel = process.env.VERCEL_URL?.trim();
+  const candidate = explicit || (vercel ? `https://${vercel}` : '');
+  try {
+    const url = new URL(candidate);
+    if (!['http:', 'https:'].includes(url.protocol) || (process.env.NODE_ENV === 'production' && url.protocol !== 'https:')) throw new Error();
+    return url.origin;
+  } catch { throw new HttpError(503, 'Application URL is not configured correctly.'); }
+}
+
 export function assertAuthConfig() {
   if (!process.env.MONGODB_URI) throw new HttpError(503, 'Database service is not configured.');
   if (!process.env.AUTH_SECRET || process.env.AUTH_SECRET.length < 32) throw new HttpError(503, 'Authentication service is not configured.');
-  try {
-    const url = new URL(process.env.APP_URL ?? '');
-    if (!['http:', 'https:'].includes(url.protocol) || (process.env.NODE_ENV === 'production' && url.protocol !== 'https:')) throw new Error();
-  } catch { throw new HttpError(503, 'Application URL is not configured correctly.'); }
 }
 
 export function assertEmailConfig() {
