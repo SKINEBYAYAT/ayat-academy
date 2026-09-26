@@ -83,8 +83,8 @@ export function AuthForm({ mode, next = '' }: { mode: Mode; next?: string }) {
     </>}
   </form>
   {mode === 'verify' && <p className="form-foot">Didn’t receive a code? <button className="resend" onClick={resend} disabled={busy || cooldown > 0 || !token}>{cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}</button><br /><Link className="text-link" href="/login">Start again with a new sign-in</Link></p>}
-  {mode === 'register' && <p className="form-foot">Already have an account? <Link className="text-link" href="/login">Sign in</Link></p>}
-  {mode === 'login' && <p className="form-foot">New to the academy? <Link className="text-link" href="/register">Create an account</Link></p>}
+  {mode === 'register' && <p className="form-foot">Already have an account? <Link className="text-link" href={safeNext ? '/login?next=' + encodeURIComponent(safeNext) : '/login'}>Sign in</Link></p>}
+  {mode === 'login' && <p className="form-foot">New to the academy? <Link className="text-link" href={safeNext ? '/register?next=' + encodeURIComponent(safeNext) : '/register'}>Create an account</Link></p>}
   {['forgot', 'reset'].includes(mode) && <p className="form-foot"><Link className="text-link" href={mode === 'reset' && !done ? '/forgot-password' : '/login'}>{mode === 'reset' && !done ? 'Request a new reset link' : 'Back to sign in'}</Link></p>}
   </>;
 }
