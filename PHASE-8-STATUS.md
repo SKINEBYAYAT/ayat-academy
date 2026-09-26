@@ -45,3 +45,5 @@ Manual QA should include:
 - mobile and desktop layouts
 
 Retried preview deployment after the latest TypeScript fix.
+
+Fresh deployment trigger after correcting the Phase 8 TypeScript env typing.
