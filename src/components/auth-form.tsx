@@ -21,13 +21,16 @@ const copy: Record<Mode, { title: string; intro: string; submit: string }> = {
   reset: { title: 'A fresh start.', intro: 'Choose a strong, unique password. Updating it will sign you out on all your devices.', submit: 'Save new password' },
 };
 
-export function AuthForm({ mode }: { mode: Mode }) {
+export function AuthForm({ mode, next = '' }: { mode: Mode; next?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const hash = useSyncExternalStore(subscribeHash, readHash, serverHash);
-  const token = new URLSearchParams(hash.slice(1)).get(mode === 'verify' ? 'challenge' : 'token') ?? '';
+  const hashParams = new URLSearchParams(hash.slice(1));
+  const token = hashParams.get(mode === 'verify' ? 'challenge' : 'token') ?? '';
+  const hashNext = hashParams.get('next') ?? '';
+  const safeNext = (mode === 'verify' ? hashNext : next).startsWith('/') && !(mode === 'verify' ? hashNext : next).startsWith('//') && !(mode === 'verify' ? hashNext : next).startsWith('/admin') ? (mode === 'verify' ? hashNext : next) : '';
   const [cooldown, setCooldown] = useState(60);
   const [done, setDone] = useState(false);
   // Fragments never reach server access logs or Referer headers.
@@ -53,8 +56,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
     if (mode === 'reset') data.token = token;
     try {
       const result = await request(mode, data);
-      if (result.challenge) router.push(`/verify#challenge=${encodeURIComponent(result.challenge)}`);
-      else if (result.redirect) { router.replace(result.redirect); router.refresh(); }
+      if (result.challenge) router.push(`/verify#challenge=${encodeURIComponent(result.challenge)}${safeNext ? `&next=${encodeURIComponent(safeNext)}` : ''}`);
+      else if (result.redirect) { router.replace(result.redirect === '/dashboard' && safeNext ? safeNext : result.redirect); router.refresh(); }
       else { setMessage(result.message); if (mode === 'reset') { setDone(true); window.history.replaceState(null, '', '/reset-password'); } }
     } catch (err) { setError(err instanceof Error ? err.message : 'Unable to connect. Please try again.'); }
     finally { setBusy(false); }
