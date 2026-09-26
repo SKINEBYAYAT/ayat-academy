@@ -17,7 +17,7 @@ export async function GET(_: Request, context: { params: Promise<{ certificateId
     completedAt: new Date(certificate.completedAt),
   });
 
-  return new NextResponse(pdf, {
+  return new NextResponse(new Uint8Array(pdf), {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="${certificate.certificateId}.pdf"`,
