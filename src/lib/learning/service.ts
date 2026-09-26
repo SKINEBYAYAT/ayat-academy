@@ -3,6 +3,7 @@ import 'server-only';
 import mongoose from 'mongoose';
 import { Course, CourseProgress, Enrollment, Lesson, Level, Section } from '@/lib/db/models/courses';
 import { HttpError } from '@/lib/http';
+import { Certificate } from '@/lib/db/models/commerce';
 
 function activeEnrollmentQuery(userId: mongoose.Types.ObjectId, courseId: mongoose.Types.ObjectId | string) {
   return {
@@ -82,8 +83,12 @@ export async function listStudentCourses(userId: mongoose.Types.ObjectId) {
 
   const courseIds = enrollments.map(enrollment => enrollment.courseId);
   const courses = await Course.find({ _id: { $in: courseIds }, published: true }).sort({ order: 1, createdAt: -1 }).lean();
-  const progresses = await CourseProgress.find({ userId, courseId: { $in: courseIds } }).lean();
+  const [progresses, certificates] = await Promise.all([
+    CourseProgress.find({ userId, courseId: { $in: courseIds } }).lean(),
+    Certificate.find({ userId, courseId: { $in: courseIds }, revokedAt: { $exists: false } }).lean(),
+  ]);
   const progressByCourse = new Map(progresses.map(progress => [String(progress.courseId), progress]));
+  const certificateByCourse = new Map(certificates.map(certificate => [String(certificate.courseId), certificate]));
 
   const result = [];
   for (const course of courses) {
@@ -102,6 +107,7 @@ export async function listStudentCourses(userId: mongoose.Types.ObjectId) {
       percentage: stats.percentage,
       completed: stats.requiredCount > 0 && stats.percentage === 100,
       lessonCount: visibleLessons.length,
+      certificate: certificateByCourse.get(String(course._id)) ?? null,
     });
   }
 
