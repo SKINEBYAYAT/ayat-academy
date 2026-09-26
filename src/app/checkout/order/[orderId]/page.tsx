@@ -63,8 +63,8 @@ export default async function OrderPage({ params }: { params: Promise<{ orderId:
         Your transaction has been submitted. An administrator must verify it before the course unlocks.
       </div>}
 
-      {order.paymentMethod === 'whish' && <div className="notice error">
-        Whish Pay is not live yet. The official merchant API contract and callback specification are still required before this method can safely process payments.
+      {order.paymentMethod === 'whish' && <div className="notice">
+        Whish Pay is currently paused. Return to checkout and choose another available method.
       </div>}
 
       {order.paymentMethod === 'card' && <div className="notice error">
