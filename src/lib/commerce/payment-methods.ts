@@ -6,7 +6,6 @@ export async function getPaymentMethodState() {
   const settings = await AdminSettings.findOne({ key: 'business' }).lean();
 
   const usdtReady = Boolean(settings?.usdtWallet && settings?.usdtNetwork);
-  const whishCredentialsPresent = Boolean(process.env.WHISH_MERCHANT_ID && process.env.WHISH_API_KEY);
   const cardCredentialsPresent = Boolean(process.env.CARD_PROVIDER && process.env.CARD_API_KEY);
 
   return {
@@ -19,10 +18,8 @@ export async function getPaymentMethodState() {
     },
     whish: {
       enabled: false,
-      credentialsPresent: whishCredentialsPresent,
-      reason: whishCredentialsPresent
-        ? 'Merchant credentials are present, but the official API contract/callback specification is still required before enabling live payments.'
-        : 'Whish merchant credentials are not configured.',
+      credentialsPresent: false,
+      reason: 'Whish Pay is intentionally skipped for now.',
     },
     card: {
       enabled: false,
