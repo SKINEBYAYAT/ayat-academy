@@ -5,7 +5,9 @@ export type ReadinessItem = {
   detail: string;
 };
 
-export function launchReadiness(env: NodeJS.ProcessEnv): ReadinessItem[] {
+type EnvLike = Record<string, string | undefined>;
+
+export function launchReadiness(env: EnvLike): ReadinessItem[] {
   let appUrlReady = false;
   try {
     const url = new URL(env.APP_URL || '');
