@@ -1,9 +1,11 @@
 'use client';
 import { useMemo, useState, type FormEvent } from 'react';
+import { RichTextEditor } from './rich-text-editor';
+import { MediaPicker } from './media-picker';
 
 type Level = { _id: string; title: string; description?: string; published: boolean; order: number };
 type Section = { _id: string; levelId: string; title: string; description?: string; published: boolean; order: number };
-type Lesson = { _id: string; levelId: string; sectionId: string; title: string; description?: string; content?: string; published: boolean; required: boolean; preview: boolean; durationSeconds?: number; order: number };
+type Lesson = { _id: string; levelId: string; sectionId: string; title: string; description?: string; content?: string; videoAssetId?: string; published: boolean; required: boolean; preview: boolean; durationSeconds?: number; order: number };
 type State = { levels: Level[]; sections: Section[]; lessons: Lesson[] };
 
 async function request(courseId: string, payload: unknown) {
@@ -18,6 +20,7 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [editor, setEditor] = useState<{ type: 'level'|'section'|'lesson'; parent?: string; item?: Level|Section|Lesson } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [lessonVideo, setLessonVideo] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const sectionsByLevel = useMemo(() => new Map(state.levels.map(l => [l._id, state.sections.filter(s => String(s.levelId) === l._id).sort((a,b)=>a.order-b.order)])), [state]);
@@ -52,10 +55,10 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
         const sectionId = editor.parent ?? String((item as Lesson).sectionId);
         const section = state.sections.find(s => s._id === sectionId);
         if (!section) throw new Error('Section not found.');
-        const data = { levelId: String(section.levelId), sectionId: section._id, title: form.get('title'), description: form.get('description'), content: form.get('content'), durationSeconds: Number(form.get('durationSeconds') || 0) || null, preview: form.get('preview') === 'on', published: form.get('published') === 'on', required: form.get('required') === 'on', order: Number(form.get('order') || 0), videoAssetId: '', resources: [] };
+        const data = { levelId: String(section.levelId), sectionId: section._id, title: form.get('title'), description: form.get('description'), content: form.get('content'), durationSeconds: Number(form.get('durationSeconds') || 0) || null, preview: form.get('preview') === 'on', published: form.get('published') === 'on', required: form.get('required') === 'on', order: Number(form.get('order') || 0), videoAssetId: lessonVideo || (item as Lesson | undefined)?.videoAssetId || '', resources: [] };
         await request(courseId, item ? { action: 'updateLesson', id: item._id, data } : { action: 'createLesson', data });
       }
-      setEditor(null); setMessage('Saved.'); await refresh();
+      setEditor(null); setLessonVideo(''); setMessage('Saved.'); await refresh();
     } catch (e) { setError(e instanceof Error ? e.message : 'Unable to save.'); }
     finally { setBusy(false); }
   }
@@ -103,7 +106,7 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
       <form className="course-form" onSubmit={saveEditor}>
         <label className="field">Title<input name="title" defaultValue={(editor.item as any)?.title ?? ''} required /></label>
         <label className="field">Description<textarea name="description" defaultValue={(editor.item as any)?.description ?? ''} rows={3} /></label>
-        {editor.type === 'lesson' && <><label className="field">Lesson content<textarea name="content" defaultValue={(editor.item as Lesson)?.content ?? ''} rows={10} /></label><label className="field">Duration in seconds<input name="durationSeconds" type="number" min="0" defaultValue={(editor.item as Lesson)?.durationSeconds ?? ''} /></label><div className="admin-form-grid three"><label className="checkbox"><input name="preview" type="checkbox" defaultChecked={(editor.item as Lesson)?.preview} /><span>Free preview</span></label><label className="checkbox"><input name="required" type="checkbox" defaultChecked={(editor.item as Lesson)?.required ?? true} /><span>Required</span></label><label className="checkbox"><input name="published" type="checkbox" defaultChecked={(editor.item as Lesson)?.published} /><span>Published</span></label></div></>}
+        {editor.type === 'lesson' && <><label className="field">Lesson content<RichTextEditor name="content" defaultValue={(editor.item as Lesson)?.content ?? ''} /></label><MediaPicker label="Lesson video" value={lessonVideo || (editor.item as Lesson)?.videoAssetId || ''} onChange={setLessonVideo} accept="video/*" kind="video" /><label className="field">Duration in seconds<input name="durationSeconds" type="number" min="0" defaultValue={(editor.item as Lesson)?.durationSeconds ?? ''} /></label><div className="admin-form-grid three"><label className="checkbox"><input name="preview" type="checkbox" defaultChecked={(editor.item as Lesson)?.preview} /><span>Free preview</span></label><label className="checkbox"><input name="required" type="checkbox" defaultChecked={(editor.item as Lesson)?.required ?? true} /><span>Required</span></label><label className="checkbox"><input name="published" type="checkbox" defaultChecked={(editor.item as Lesson)?.published} /><span>Published</span></label></div></>}
         {editor.type !== 'lesson' && <label className="checkbox"><input name="published" type="checkbox" defaultChecked={(editor.item as Level|Section)?.published} /><span>Published</span></label>}
         <label className="field">Order<input name="order" type="number" min="0" defaultValue={(editor.item as any)?.order ?? 0} /></label>
         <div className="actions"><button className="button" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button><button className="button secondary" type="button" onClick={() => setEditor(null)}>Cancel</button></div>
