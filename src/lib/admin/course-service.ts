@@ -48,37 +48,94 @@ export async function cascadeDeleteSection(courseId: string, sectionId: string) 
   ]);
 }
 
-export async function duplicateCourse(courseId: string) {
+export async function duplicateCourse(courseId: string): Promise<{ id: string; slug: string }> {
   const source = await getCourseOr404(courseId);
   const [levels, sections, lessons] = await Promise.all([
     Level.find({ courseId }).sort({ order: 1 }).lean(),
     Section.find({ courseId }).sort({ order: 1 }).lean(),
     Lesson.find({ courseId }).sort({ order: 1 }).select('+videoAssetId +resources.privateAssetId').lean(),
   ]);
+
   const base = source.slug.replace(/-copy(?:-\d+)?$/, '');
-  let n = 0;
+  let suffix = 1;
   let nextSlug = `${base}-copy`;
-  while (await Course.exists({ slug: nextSlug })) nextSlug = `${base}-copy-${++n + 1}`;
+  while (await Course.exists({ slug: nextSlug })) {
+    suffix += 1;
+    nextSlug = `${base}-copy-${suffix}`;
+  }
 
   const copy = await Course.create({
-    ...source.toObject(), _id: undefined, __v: undefined, createdAt: undefined, updatedAt: undefined,
-    title: `${source.title} Copy`, slug: nextSlug, published: false, featured: false,
+    title: `${source.title} Copy`,
+    slug: nextSlug,
+    shortDescription: source.shortDescription,
+    description: source.description,
+    thumbnail: source.thumbnail,
+    coverImage: source.coverImage,
+    priceMinor: source.priceMinor,
+    salePriceMinor: source.salePriceMinor,
+    currency: source.currency,
+    published: false,
+    featured: false,
+    requirements: source.requirements,
+    learningOutcomes: source.learningOutcomes,
+    instructorName: source.instructorName,
+    instructorBio: source.instructorBio,
+    estimatedMinutes: source.estimatedMinutes,
+    certificateEnabled: source.certificateEnabled,
+    order: source.order,
   });
 
+  const copyId = copy._id as mongoose.Types.ObjectId;
   const levelMap = new Map<string, mongoose.Types.ObjectId>();
+
   for (const level of levels) {
-    const created = await Level.create({ ...level, _id: undefined, __v: undefined, createdAt: undefined, updatedAt: undefined, courseId: copy._id, published: false });
-    levelMap.set(String(level._id), created._id);
+    const created = await Level.create({
+      courseId: copyId,
+      title: level.title,
+      description: level.description,
+      order: level.order,
+      published: false,
+    });
+    levelMap.set(String(level._id), created._id as mongoose.Types.ObjectId);
   }
+
   const sectionMap = new Map<string, mongoose.Types.ObjectId>();
   for (const section of sections) {
-    const created = await Section.create({ ...section, _id: undefined, __v: undefined, createdAt: undefined, updatedAt: undefined, courseId: copy._id, levelId: levelMap.get(String(section.levelId)), published: false });
-    sectionMap.set(String(section._id), created._id);
+    const mappedLevelId = levelMap.get(String(section.levelId));
+    if (!mappedLevelId) throw new HttpError(500, 'Unable to duplicate course hierarchy.');
+    const created = await Section.create({
+      courseId: copyId,
+      levelId: mappedLevelId,
+      title: section.title,
+      description: section.description,
+      order: section.order,
+      published: false,
+    });
+    sectionMap.set(String(section._id), created._id as mongoose.Types.ObjectId);
   }
+
   for (const lesson of lessons) {
-    await Lesson.create({ ...lesson, _id: undefined, __v: undefined, createdAt: undefined, updatedAt: undefined, courseId: copy._id, levelId: levelMap.get(String(lesson.levelId)), sectionId: sectionMap.get(String(lesson.sectionId)), published: false });
+    const mappedLevelId = levelMap.get(String(lesson.levelId));
+    const mappedSectionId = sectionMap.get(String(lesson.sectionId));
+    if (!mappedLevelId || !mappedSectionId) throw new HttpError(500, 'Unable to duplicate course hierarchy.');
+    await Lesson.create({
+      courseId: copyId,
+      levelId: mappedLevelId,
+      sectionId: mappedSectionId,
+      title: lesson.title,
+      description: lesson.description,
+      content: lesson.content,
+      videoAssetId: lesson.videoAssetId,
+      resources: lesson.resources,
+      durationSeconds: lesson.durationSeconds,
+      order: lesson.order,
+      preview: lesson.preview,
+      published: false,
+      required: lesson.required,
+    });
   }
-  return copy;
+
+  return { id: String(copyId), slug: copy.slug };
 }
 
 export async function assertSectionHierarchy(courseId: string, levelId: string) {
