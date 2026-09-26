@@ -17,6 +17,10 @@ Phase 8 turns the completed academy into a launch-ready product with operational
 - Expanded admin overview metrics.
 - Launch checklist and final QA guidance.
 
+## Deployment retry
+
+Triggered a fresh Phase 8 preview deployment after the user asked to retry.
+
 ## Verification before merge
 
 ```sh
