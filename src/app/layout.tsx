@@ -1,19 +1,61 @@
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
+import { PwaRegister } from '@/components/pwa-register';
 import './globals.css';
 
+const siteUrl = process.env.APP_URL || 'http://localhost:3000';
+
 export const metadata: Metadata = {
-  title: { default: 'Ayat Academy | The art & science of skincare', template: '%s | Ayat Academy' },
-  description: 'Your space to grow in professional skincare. Learn with intention, build your confidence, and care with knowledge.',
-  robots: { index: false, follow: false },
+  metadataBase: new URL(siteUrl),
+  title: { default: 'Ayat Academy | Professional skincare education', template: '%s | Ayat Academy' },
+  description: 'Professional skincare education with structured courses, guided lessons, progress tracking, and completion certificates.',
+  applicationName: 'Ayat Academy',
+  manifest: '/manifest.webmanifest',
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Ayat Academy',
+    title: 'Ayat Academy | Professional skincare education',
+    description: 'Learn professional skincare through structured courses and guided lessons.',
+    url: '/',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ayat Academy | Professional skincare education',
+    description: 'Learn professional skincare through structured courses and guided lessons.',
+  },
+  robots: { index: true, follow: true },
+  icons: {
+    icon: '/pwa-icon?size=192',
+    apple: '/pwa-icon?size=192',
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'Ayat Academy',
+    statusBarStyle: 'default',
+  },
 };
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#f7f5ef' };
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#294c3e',
+};
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en"><body>
     <a className="skip-link" href="#main">Skip to content</a>
-    <header className="site-header"><Link href="/" className="wordmark" aria-label="Ayat Academy home">ayat<span>ACADEMY</span></Link><nav aria-label="Main navigation"><Link href="/courses">Courses</Link><Link href="/login">Sign in <span aria-hidden="true">↗</span></Link><Link className="button small" href="/register">Join the academy</Link></nav></header>
+    <header className="site-header">
+      <Link href="/" className="wordmark" aria-label="Ayat Academy home">ayat<span>ACADEMY</span></Link>
+      <nav aria-label="Main navigation">
+        <Link href="/courses">Courses</Link>
+        <Link href="/login">Sign in <span aria-hidden="true">↗</span></Link>
+        <Link className="button small" href="/register">Join the academy</Link>
+      </nav>
+    </header>
     <main id="main">{children}</main>
     <footer className="site-footer"><span>AYAT ACADEMY</span><p>Knowledge is the beginning of beautiful care.</p><span>Skincare education, thoughtfully.</span></footer>
+    <PwaRegister />
   </body></html>;
 }

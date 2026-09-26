@@ -1,7 +1,14 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Course } from '@/lib/db/models/courses';
 
 export const dynamic = 'force-dynamic';
+export const metadata: Metadata = {
+  title: 'Professional skincare courses',
+  description: 'Explore Ayat Academy professional skincare courses, structured lessons, practical learning, and completion certificates.',
+  alternates: { canonical: '/courses' },
+  openGraph: { title: 'Professional skincare courses | Ayat Academy', description: 'Explore structured professional skincare education from Ayat Academy.', url: '/courses' },
+};
 
 export default async function CoursesPage() {
   const courses = await Course.find({ published: true }).sort({ featured: -1, order: 1, createdAt: -1 }).lean();

@@ -1,2 +1,13 @@
 import Link from 'next/link';
-export default function NotFound() { return <section className="home"><span className="eyebrow">404 · A little off course</span><h1>Let’s find your way back.</h1><p>This page isn’t here. Your learning journey still is.</p><Link className="button" href="/">Return home</Link></section>; }
+
+export default function NotFound() {
+  return <section className="not-found-page">
+    <span className="eyebrow">Ayat Academy</span>
+    <h1>We couldn’t find that page.</h1>
+    <p>The page may have moved, or the course may no longer be published.</p>
+    <div className="actions">
+      <Link className="button" href="/courses">Browse courses</Link>
+      <Link className="button secondary" href="/">Go home</Link>
+    </div>
+  </section>;
+}
