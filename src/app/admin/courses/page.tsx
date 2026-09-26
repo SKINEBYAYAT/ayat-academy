@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { requirePageUser } from '@/lib/auth/session';
 import { Course, Level, Section, Lesson } from '@/lib/db/models/courses';
 import { CourseActions } from '@/components/admin/course-actions';
+import { CourseOrderButtons } from '@/components/admin/course-order-buttons';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,7 +62,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
       </div>
     ) : (
       <div className="course-list">
-        {courses.map(course => (
+        {courses.map((course, index) => (
           <article className="course-admin-card" key={String(course._id)}>
             <div className="course-thumb">
               {course.thumbnail ? <img src={course.thumbnail} alt="" /> : <span>{course.title.slice(0, 1).toUpperCase()}</span>}
@@ -88,7 +89,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
                 <span>Updated {new Date(course.updatedAt).toLocaleDateString()}</span>
               </div>
 
-              <CourseActions id={String(course._id)} published={course.published} />
+              <div className="course-card-footer"><CourseOrderButtons ids={courses.map(item => String(item._id))} index={index} /><CourseActions id={String(course._id)} published={course.published} /></div>
             </div>
           </article>
         ))}
