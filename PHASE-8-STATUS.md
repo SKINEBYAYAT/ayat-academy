@@ -47,3 +47,5 @@ Manual QA should include:
 Retried preview deployment after the latest TypeScript fix.
 
 Fresh deployment trigger after correcting the Phase 8 TypeScript env typing.
+
+Retried deployment after mobile and password fixes.
