@@ -39,7 +39,6 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
     <div className="panel checkout-panel">
       <h2>Choose payment method</h2>
       <CheckoutForm courseId={String(course._id)} priceLabel={priceLabel} availability={{
-        whish: { enabled: methods.whish.enabled, reason: methods.whish.reason },
         card: { enabled: methods.card.enabled, reason: methods.card.reason },
         usdt: { enabled: methods.usdt.enabled },
       }} />
