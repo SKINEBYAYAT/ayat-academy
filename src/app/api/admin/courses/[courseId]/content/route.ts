@@ -72,10 +72,23 @@ export async function POST(request: Request, context: { params: Promise<{ course
       return NextResponse.json({ message: 'Lesson deleted.' });
     }
     if (input.action === 'reorder') {
-      const Model = input.kind === 'level' ? Level : input.kind === 'section' ? Section : Lesson;
-      const docs = await Model.find({ _id: { $in: input.ids }, courseId }).select('_id');
-      if (docs.length !== input.ids.length) throw new HttpError(400, 'One or more items do not belong to this course.');
-      await Promise.all(input.ids.map((id, order) => Model.updateOne({ _id: id, courseId }, { $set: { order } })));
+      if (input.kind === 'level') {
+        const docs = await Level.find({ _id: { $in: input.ids }, courseId }).select('_id');
+        if (docs.length !== input.ids.length) throw new HttpError(400, 'One or more levels do not belong to this course.');
+        await Promise.all(input.ids.map((id, order) => Level.updateOne({ _id: id, courseId }, { $set: { order } })));
+      } else if (input.kind === 'section') {
+        const docs = await Section.find({ _id: { $in: input.ids }, courseId }).select('_id levelId');
+        if (docs.length !== input.ids.length) throw new HttpError(400, 'One or more sections do not belong to this course.');
+        const parents = new Set(docs.map(doc => String(doc.levelId)));
+        if (parents.size !== 1) throw new HttpError(400, 'Sections can only be reordered inside the same level.');
+        await Promise.all(input.ids.map((id, order) => Section.updateOne({ _id: id, courseId }, { $set: { order } })));
+      } else {
+        const docs = await Lesson.find({ _id: { $in: input.ids }, courseId }).select('_id sectionId');
+        if (docs.length !== input.ids.length) throw new HttpError(400, 'One or more lessons do not belong to this course.');
+        const parents = new Set(docs.map(doc => String(doc.sectionId)));
+        if (parents.size !== 1) throw new HttpError(400, 'Lessons can only be reordered inside the same section.');
+        await Promise.all(input.ids.map((id, order) => Lesson.updateOne({ _id: id, courseId }, { $set: { order } })));
+      }
       return NextResponse.json({ message: 'Order saved.' });
     }
     throw new HttpError(400, 'Unsupported action.');
