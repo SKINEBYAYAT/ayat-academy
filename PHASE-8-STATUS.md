@@ -49,3 +49,4 @@ Retried preview deployment after the latest TypeScript fix.
 Fresh deployment trigger after correcting the Phase 8 TypeScript env typing.
 
 Retried deployment after mobile and password fixes.
+Redeploy trigger: 2026-09-29 — latest auth and MongoDB connectivity fixes ready for verification.
