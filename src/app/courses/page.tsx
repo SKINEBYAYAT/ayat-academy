@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Course } from '@/lib/db/models/courses';
+import { connectDB } from '@/lib/db/connect';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CoursesPage() {
+  await connectDB();
   const courses = await Course.find({ published: true }).sort({ featured: -1, order: 1, createdAt: -1 }).lean();
 
   return <section className="public-courses">
