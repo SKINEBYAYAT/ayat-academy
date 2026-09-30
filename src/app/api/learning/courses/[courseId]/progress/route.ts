@@ -3,7 +3,7 @@ import { z } from 'zod';
 import mongoose from 'mongoose';
 import { requireUser } from '@/lib/auth/session';
 import { CourseProgress, Lesson } from '@/lib/db/models/courses';
-import { getPublishedCourseTree, progressStats, requireCourseAccess } from '@/lib/learning/service';
+import { getPublishedCourseTree, progressStats, requiredProgressStats, requireCourseAccess } from '@/lib/learning/service';
 import { errorResponse, HttpError, readJson, sameOrigin } from '@/lib/http';
 import { ensureCertificateForCompletion } from '@/lib/certificates/service';
 
@@ -54,12 +54,14 @@ export async function PATCH(request: Request, context: { params: Promise<{ cours
     const progress = await CourseProgress.findOneAndUpdate(
       { userId: user._id, courseId: course._id },
       operations,
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
     );
 
     const stats = progressStats(tree.lessons, progress.completedLessonIds ?? []);
+    const requiredStats = requiredProgressStats(tree.lessons, progress.completedLessonIds ?? []);
     let certificateId: string | null = null;
-    if (stats.requiredCount > 0 && stats.percentage === 100 && !progress.completedAt) {
+
+    if (stats.lessonCount > 0 && stats.percentage === 100 && !progress.completedAt) {
       progress.completedAt = new Date();
       await progress.save();
     } else if (stats.percentage < 100 && progress.completedAt) {
@@ -67,7 +69,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ cours
       await progress.save();
     }
 
-    if (stats.requiredCount > 0 && stats.percentage === 100 && course.certificateEnabled) {
+    if (requiredStats.percentage === 100 && course.certificateEnabled) {
       const certificate = await ensureCertificateForCompletion(user._id, course._id);
       certificateId = certificate?.certificateId ?? null;
     }
