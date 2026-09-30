@@ -6,7 +6,7 @@ import { put } from '@vercel/blob';
 import { HttpError } from '@/lib/http';
 
 const allowed = {
-  image: ['image/jpeg','image/png','image/webp','image/avif'],
+  image: ['image/jpeg','image/png','image/webp','image/avif','image/gif','image/bmp','image/heic','image/heif'],
   video: ['video/mp4','video/webm','video/quicktime'],
   resource: ['application/pdf','image/jpeg','image/png','image/webp','application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
 } as const;
@@ -46,14 +46,14 @@ export async function saveMedia(file: File, kind: keyof typeof allowed) {
     throw new HttpError(415, 'This file type is not supported.');
   }
 
-  const max = kind === 'video' ? 250 * 1024 * 1024 : kind === 'image' ? 5 * 1024 * 1024 : 12 * 1024 * 1024;
+  const max = kind === 'video' ? 250 * 1024 * 1024 : 12 * 1024 * 1024;
   if (file.size <= 0 || file.size > max) {
     throw new HttpError(
       413,
       kind === 'video'
         ? 'Video is too large.'
         : kind === 'image'
-          ? 'Image is too large. Please use an image under 5 MB.'
+          ? 'Image is too large. Please use an image under 12 MB.'
           : 'File is too large.',
     );
   }
