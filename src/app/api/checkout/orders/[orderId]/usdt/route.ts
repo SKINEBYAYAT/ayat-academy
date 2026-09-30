@@ -1,13 +1,25 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
-import { z } from 'zod';
 import { requireUser } from '@/lib/auth/session';
-import { AdminSettings, Order } from '@/lib/db/models/commerce';
-import { errorResponse, HttpError, readJson, sameOrigin } from '@/lib/http';
+import { Order } from '@/lib/db/models/commerce';
+import { Course } from '@/lib/db/models/courses';
+import { createNowPaymentsInvoice, hasNowPaymentsConfig } from '@/lib/commerce/nowpayments';
+import { errorResponse, HttpError, sameOrigin } from '@/lib/http';
 
-const schema = z.object({
-  transactionHash: z.string().trim().min(20).max(200).regex(/^[A-Za-z0-9_-]+$/, 'Invalid transaction hash.'),
-});
+function publicOrigin(request: Request) {
+  const configured = process.env.APP_URL?.trim();
+  if (configured) {
+    try {
+      const url = new URL(configured);
+      if (url.protocol === 'https:') return url.origin;
+    } catch {}
+  }
+  const url = new URL(request.url);
+  if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') {
+    throw new HttpError(503, 'Application URL is not configured correctly.');
+  }
+  return url.origin;
+}
 
 export async function POST(request: Request, context: { params: Promise<{ orderId: string }> }) {
   try {
@@ -15,32 +27,44 @@ export async function POST(request: Request, context: { params: Promise<{ orderI
     const user = await requireUser();
     const { orderId } = await context.params;
     if (!mongoose.Types.ObjectId.isValid(orderId)) throw new HttpError(404, 'Order not found.');
+    if (!hasNowPaymentsConfig()) throw new HttpError(503, 'Crypto payments are not configured.');
 
-    const input = schema.parse(await readJson(request));
     const order = await Order.findOne({ _id: orderId, userId: user._id });
     if (!order) throw new HttpError(404, 'Order not found.');
-    if (order.paymentMethod !== 'usdt') throw new HttpError(409, 'This order does not use USDT.');
-    if (order.paymentStatus === 'paid') throw new HttpError(409, 'This order is already paid.');
-    if (!['pending', 'rejected', 'failed'].includes(order.paymentStatus)) throw new HttpError(409, 'This order is already awaiting verification.');
+    if (order.paymentMethod !== 'usdt') throw new HttpError(409, 'This order does not use crypto payment.');
+    if (order.paymentStatus === 'paid') {
+      return NextResponse.json({ paid: true, redirect: '/dashboard' });
+    }
+    if (order.paymentStatus === 'refunded') throw new HttpError(409, 'This order was refunded.');
+    if (order.currency.toUpperCase() !== 'USD') {
+      throw new HttpError(409, 'Crypto checkout currently supports USD-priced courses only.');
+    }
 
-    const duplicate = await Order.exists({
-      _id: { $ne: order._id },
-      paymentMethod: 'usdt',
-      transactionHash: input.transactionHash,
-      paymentStatus: { $in: ['awaiting_verification', 'paid'] },
+    if (order.providerCheckoutUrl && order.providerInvoiceId) {
+      return NextResponse.json({ checkoutUrl: order.providerCheckoutUrl });
+    }
+
+    const course = await Course.findById(order.courseId).select('title slug').lean();
+    if (!course) throw new HttpError(404, 'Course not found.');
+
+    const origin = publicOrigin(request);
+    const invoice = await createNowPaymentsInvoice({
+      amount: order.amountMinor / 100,
+      currency: order.currency,
+      orderId: String(order._id),
+      description: 'Ayat Academy - ' + course.title,
+      callbackUrl: origin + '/api/payments/nowpayments/ipn',
+      successUrl: origin + '/checkout/order/' + order._id,
+      cancelUrl: origin + '/checkout/order/' + order._id,
     });
-    if (duplicate) throw new HttpError(409, 'This transaction hash has already been submitted.');
 
-    const settings = await AdminSettings.findOne({ key: 'business' });
-    if (!settings?.usdtWallet || !settings.usdtNetwork) throw new HttpError(503, 'USDT payments are not configured.');
-
-    order.transactionHash = input.transactionHash;
-    order.network = settings.usdtNetwork;
-    order.walletAddress = settings.usdtWallet;
-    order.paymentStatus = 'awaiting_verification';
+    order.providerInvoiceId = invoice.invoiceId;
+    order.providerCheckoutUrl = invoice.invoiceUrl;
+    order.providerStatus = 'invoice_created';
+    order.network = 'BEP20';
     await order.save();
 
-    return NextResponse.json({ message: 'Transaction submitted for verification.' });
+    return NextResponse.json({ checkoutUrl: invoice.invoiceUrl });
   } catch (error) {
     return errorResponse(error);
   }
