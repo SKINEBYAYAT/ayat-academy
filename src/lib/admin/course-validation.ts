@@ -22,7 +22,7 @@ export const courseInput = z.object({
   instructorName: text(120),
   instructorBio: text(5000),
   estimatedMinutes: z.number().int().min(0).max(100_000).optional().nullable(),
-  certificateEnabled: z.boolean().default(false),
+  certificateEnabled: z.boolean().default(true),
   order: z.number().int().min(0).max(1_000_000).default(0),
 });
 
