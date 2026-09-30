@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BookOpen } from 'lucide-react';
 import { requirePageUser } from '@/lib/auth/session';
-import { ProfileForm } from '@/components/account-actions';
 import { listStudentCourses } from '@/lib/learning/service';
 
 export const metadata: Metadata = { title: 'Your learning space', robots: { index: false, follow: false } };
@@ -22,7 +21,7 @@ export default async function Dashboard() {
       {user.role === 'admin' && <div className="actions"><Link className="button secondary small" href="/admin">Administration</Link></div>}
     </div>
 
-    <div className="workspace-grid">
+    <div className="workspace-grid single-column">
       <section className="panel student-course-panel">
         <h2>My courses</h2>
         {courses.length === 0 ? <div className="empty-state">
@@ -52,16 +51,6 @@ export default async function Dashboard() {
             </article>;
           })}
         </div>}
-      </section>
-
-      <section className="panel">
-        <h2>Your profile</h2>
-        <dl className="account-details">
-          <dt>Email address</dt><dd>{user.email}</dd>
-          <dt>Account</dt><dd>{user.role === 'admin' ? 'Administrator' : 'Student'} · Email verified</dd>
-        </dl>
-        <ProfileForm name={user.fullName} />
-        <p className="form-foot"><Link className="text-link" href="/forgot-password">Reset your password</Link></p>
       </section>
     </div>
   </section>;
