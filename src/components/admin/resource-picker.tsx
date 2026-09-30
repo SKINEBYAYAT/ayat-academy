@@ -3,7 +3,8 @@ import { useRef, useState } from 'react';
 
 export type LessonResourceDraft = { title: string; privateAssetId: string };
 
-export function ResourcePicker({ resources, onChange }: { resources: LessonResourceDraft[]; onChange: (resources: LessonResourceDraft[]) => void }) {
+export function ResourcePicker({ resources, onChange, language = 'en' }: { resources: LessonResourceDraft[]; onChange: (resources: LessonResourceDraft[]) => void; language?: 'en'|'ar' }) {
+  const t = (en: string, ar: string) => language === 'ar' ? ar : en;
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -37,11 +38,11 @@ export function ResourcePicker({ resources, onChange }: { resources: LessonResou
   }
 
   return <div className="resource-picker">
-    <div className="resource-head"><span className="field-label">Lesson resources</span><button className="button secondary small" type="button" disabled={busy} onClick={() => input.current?.click()}>{busy ? 'Uploading…' : '+ Add file'}</button></div>
+    <div className="resource-head"><span className="field-label">{t('Lesson resources','ملفات الدرس')}</span><button className="button secondary small" type="button" disabled={busy} onClick={() => input.current?.click()}>{busy ? t('Uploading…','جارٍ الرفع…') : t('+ Add file','+ إضافة ملف')}</button></div>
     <input ref={input} hidden type="file" accept=".pdf,.docx,image/*" onChange={e => upload(e.target.files?.[0])} />
-    {resources.length === 0 ? <p className="media-note">No resources attached.</p> : <div className="resource-list">{resources.map((resource, index) => <div className="resource-row" key={resource.privateAssetId + index}>
-      <input aria-label="Resource title" value={resource.title} maxLength={160} onChange={e => rename(index, e.target.value)} />
-      <button type="button" className="danger-link" onClick={() => remove(index)}>Remove</button>
+    {resources.length === 0 ? <p className="media-note">{t('No resources attached.','لا توجد ملفات مرفقة.')}</p> : <div className="resource-list">{resources.map((resource, index) => <div className="resource-row" key={resource.privateAssetId + index}>
+      <input aria-label={t('Resource title','اسم الملف')} value={resource.title} maxLength={160} onChange={e => rename(index, e.target.value)} />
+      <button type="button" className="danger-link" onClick={() => remove(index)}>{t('Remove','حذف')}</button>
     </div>)}</div>}
     {error && <p className="notice error">{error}</p>}
   </div>;
