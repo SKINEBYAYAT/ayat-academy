@@ -199,8 +199,8 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
       <span className="eyebrow">{t('Course structure', 'هيكل الدورة')}</span>
       <h3>{t('Level → Section → Lesson', 'مستوى ← قسم ← درس')}</h3>
       <p>{t(
-        'Start with a level, add sections inside it, then add lessons with videos and resources.',
-        'ابدئي بالمستوى، ثم أضيفي الأقسام داخله، وبعدها الدروس والفيديوهات والملفات.',
+        'Start with a level, add sections inside it, then add lessons with videos and resources. All published content here is included in the course purchase automatically.',
+        'ابدئي بالمستوى، ثم أضيفي الأقسام داخله، وبعدها الدروس والفيديوهات والملفات. كل المحتوى المنشور هنا يكون مشمولاً تلقائياً عند شراء الدورة.',
       )}</p>
     </div>
 
