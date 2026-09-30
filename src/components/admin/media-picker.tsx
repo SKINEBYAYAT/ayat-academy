@@ -25,12 +25,20 @@ export function MediaPicker({ label, value, onChange, accept, kind = 'image', la
     if (!create.ok) throw new Error(created.error ?? t('Unable to start video upload.', 'تعذر بدء رفع الفيديو.'));
 
     setStatus(t('Uploading video to secure storage…', 'جارٍ رفع الفيديو إلى التخزين الآمن…'));
-    const upload = await fetch(created.uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': file.type || 'application/octet-stream' },
-      body: file,
-    });
-    if (!upload.ok) throw new Error(t('Video upload failed.', 'فشل رفع الفيديو.'));
+    let upload: Response;
+    try {
+      upload = await fetch(created.uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file,
+      });
+    } catch {
+      throw new Error(t(
+        'The browser could not reach Mux upload storage. Please retry once after this deployment finishes.',
+        'تعذر على المتصفح الوصول إلى تخزين Mux. حاولي مرة أخرى بعد اكتمال هذا التحديث.',
+      ));
+    }
+    if (!upload.ok) throw new Error(t('Video upload failed with status ' + upload.status + '.', 'فشل رفع الفيديو. رمز الخطأ: ' + upload.status + '.'));
 
     setStatus(t('Upload complete. Mux is processing the video…', 'اكتمل الرفع. جارٍ معالجة الفيديو…'));
     for (let attempt = 0; attempt < 120; attempt++) {
