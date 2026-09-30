@@ -9,6 +9,12 @@ export type VideoSource =
 export function resolvePrivateAsset(assetId?: string | null) {
   if (!assetId) return null;
   if (assetId.startsWith('/uploads/')) return assetId;
+  if (assetId.startsWith('blob:https://')) {
+    try {
+      const url = new URL(assetId.slice(5));
+      if (url.protocol === 'https:' && url.hostname.endsWith('.blob.vercel-storage.com')) return url.toString();
+    } catch {}
+  }
   const match = assetId.match(/^local-dev:(image|video|resource):([a-f0-9]+\.[A-Za-z0-9]+)$/);
   if (match) return '/uploads/' + match[1] + '/' + match[2];
   return null;
