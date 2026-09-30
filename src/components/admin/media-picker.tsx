@@ -20,7 +20,7 @@ export function MediaPicker({ label, value, onChange, accept, kind = 'image', la
   useEffect(() => () => { if (preview.startsWith('blob:')) URL.revokeObjectURL(preview); }, [preview]);
 
   async function uploadMuxVideo(file: File) {
-    const create = await fetch('/api/admin/media/mux', { method: 'POST' });
+    const create = await fetch('/api/admin/media/mux', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     const created = await create.json();
     if (!create.ok) throw new Error(created.error ?? t('Unable to start video upload.', 'تعذر بدء رفع الفيديو.'));
 
