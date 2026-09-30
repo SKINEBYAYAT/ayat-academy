@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requirePageUser } from '@/lib/auth/session';
 import { getCourseProgress, getPublishedCourseTree, progressStats, requireCourseAccessBySlug } from '@/lib/learning/service';
-import { resolvePrivateAsset } from '@/lib/learning/assets';
+import { resolvePrivateAsset, resolveVideoAsset } from '@/lib/learning/assets';
 import { HttpError } from '@/lib/http';
 import { MarkdownContent } from '@/components/learning/markdown-content';
 import { ProgressControls } from '@/components/learning/progress-controls';
@@ -26,7 +26,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     const stats = progressStats(tree.lessons, progress?.completedLessonIds ?? []);
     const previous = lessonIndex > 0 ? tree.lessons[lessonIndex - 1] : null;
     const next = lessonIndex < tree.lessons.length - 1 ? tree.lessons[lessonIndex + 1] : null;
-    const videoUrl = resolvePrivateAsset(lesson.videoAssetId);
+    const video = resolveVideoAsset(lesson.videoAssetId);
     const position = Number(progress?.videoPositions?.get(String(lesson._id)) ?? 0);
 
     return <div className="learning-shell">
@@ -66,7 +66,14 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
           <ProgressControls courseId={String(course._id)} lessonId={String(lesson._id)} completed={completedIds.has(String(lesson._id))} />
         </div>
 
-        {videoUrl && <VideoPlayer src={videoUrl} courseId={String(course._id)} lessonId={String(lesson._id)} initialPosition={position} />}
+        {video && <VideoPlayer
+          src={video.type === 'url' ? video.src : undefined}
+          playbackId={video.type === 'mux' ? video.playbackId : undefined}
+          playbackToken={video.type === 'mux' ? video.playbackToken : undefined}
+          courseId={String(course._id)}
+          lessonId={String(lesson._id)}
+          initialPosition={position}
+        />}
         {lesson.content && <MarkdownContent content={lesson.content} />}
 
         {lesson.resources?.length ? <section className="student-resources"><span className="eyebrow">Resources</span><div>
