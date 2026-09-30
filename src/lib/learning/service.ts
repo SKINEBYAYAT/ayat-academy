@@ -74,17 +74,6 @@ export function progressStats(
   return { lessonCount: lessonIds.length, completedCount, percentage };
 }
 
-export function requiredProgressStats(
-  lessons: Array<{ _id: unknown; required?: boolean }>,
-  completedLessonIds: Array<unknown> = [],
-) {
-  const requiredIds = lessons.filter(lesson => lesson.required !== false).map(lesson => String(lesson._id));
-  const completed = new Set(completedLessonIds.map(String));
-  const completedRequired = requiredIds.filter(id => completed.has(id)).length;
-  const percentage = requiredIds.length === 0 ? 100 : Math.round((completedRequired / requiredIds.length) * 100);
-  return { requiredCount: requiredIds.length, completedRequired, percentage };
-}
-
 export async function listStudentCourses(userId: mongoose.Types.ObjectId) {
   const enrollments = await Enrollment.find({
     userId,
@@ -103,7 +92,7 @@ export async function listStudentCourses(userId: mongoose.Types.ObjectId) {
 
   const result = [];
   for (const course of courses) {
-    const lessons = await Lesson.find({ courseId: course._id, published: true }).select('_id required sectionId levelId').lean();
+    const lessons = await Lesson.find({ courseId: course._id, published: true }).select('_id sectionId levelId').lean();
     const publishedLevels = new Set((await Level.find({ courseId: course._id, published: true }).select('_id').lean()).map(level => String(level._id)));
     const publishedSections = new Set((await Section.find({ courseId: course._id, published: true }).select('_id levelId').lean())
       .filter(section => publishedLevels.has(String(section.levelId)))
