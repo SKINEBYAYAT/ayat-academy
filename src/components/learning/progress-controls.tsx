@@ -35,8 +35,12 @@ export function ProgressControls({
     if (done || busy) return;
     setBusy(true);
     try {
-      await patch({ currentLessonId: lessonId, completedLessonId: lessonId });
+      const result = await patch({ currentLessonId: lessonId, completedLessonId: lessonId });
       setDone(true);
+      if (result.progress?.certificateId) {
+        router.push('/certificate/' + result.progress.certificateId + '?completed=1');
+        return;
+      }
       router.refresh();
     } finally {
       setBusy(false);
