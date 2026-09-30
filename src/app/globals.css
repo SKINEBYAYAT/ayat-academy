@@ -282,3 +282,25 @@
   .student-course-actions .button{width:100%;justify-self:stretch}
   .premium-certificate-side-panel{padding:20px}
 }
+
+
+/* Mobile visual polish: use drawn interface icons instead of Unicode emoji glyphs */
+.ui-icon{width:14px;height:14px;display:inline-block;flex:0 0 14px;vertical-align:-2px;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.icon-link{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.menu-svg{width:18px;height:18px;display:block;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+.home-hero h1{text-wrap:balance}
+@media(max-width:640px){
+  .site-header{padding:18px 5% 16px}
+  .site-header nav{grid-template-columns:.86fr 1fr 1.35fr;gap:9px;padding-top:13px}
+  .site-header nav>a{min-width:0;min-height:46px;border-radius:9px;padding-inline:9px;line-height:1.2}
+  .site-header nav .button{padding:10px 11px}
+  .wordmark{font-size:36px}
+  .wordmark span{margin-top:9px}
+  .home.home-hero{margin:38px auto 50px;min-height:auto;padding-inline:5%}
+  .home-hero .eyebrow{display:block;font-size:9px;letter-spacing:2.35px;line-height:1.5}
+  .home-hero h1{font-size:clamp(43px,12.4vw,54px);line-height:.99;letter-spacing:-.047em;margin:18px 0 0;max-width:11.8ch}
+  .home-hero p{font-size:15px;line-height:1.72;margin:22px 0 26px;max-width:34rem}
+  .home-hero .actions{gap:10px}
+  .home-hero .actions .button{min-height:54px;border-radius:9px;font-size:15px}
+  .home-hero .ui-icon{width:15px;height:15px;flex-basis:15px}
+}
