@@ -128,3 +128,5 @@
   .account-menu summary{min-width:92px;justify-content:center}
   .account-menu-panel{position:fixed;right:5%;top:96px;width:min(280px,90vw)}
 }
+
+.workspace-grid.single-column{grid-template-columns:1fr}.profile-page{max-width:760px}.profile-panel{max-width:620px;width:100%}
