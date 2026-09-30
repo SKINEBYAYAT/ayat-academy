@@ -4,14 +4,24 @@ import { getPublicCertificate } from '@/lib/certificates/service';
 
 export const dynamic = 'force-dynamic';
 
-export default async function CertificatePage({ params }: { params: Promise<{ certificateId: string }> }) {
+export default async function CertificatePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ certificateId: string }>;
+  searchParams: Promise<{ completed?: string }>;
+}) {
   const { certificateId } = await params;
+  const { completed } = await searchParams;
   const certificate = await getPublicCertificate(certificateId);
   if (!certificate) notFound();
 
   const valid = !certificate.revokedAt;
 
   return <section className="certificate-page">
+    {completed === '1' && valid && <div className="notice certificate-earned" role="status">
+      <strong>Course completed!</strong> You earned your certificate. You can view or save it below.
+    </div>}
     <div className="certificate-verification-card">
       <span className="eyebrow">Certificate verification</span>
       <div className={valid ? 'certificate-state valid' : 'certificate-state revoked'}>{valid ? '✓ Valid certificate' : 'Certificate revoked'}</div>
