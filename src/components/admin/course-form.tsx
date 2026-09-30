@@ -91,9 +91,13 @@ export function CourseForm({ initial, courseId }: { initial?: CourseDraft; cours
     </div>
 
     <div className="panel admin-form-section">
-      <span className="eyebrow">{t('Price & instructor','السعر والمدرّبة')}</span>
+      <span className="eyebrow">{t('Course price & instructor','سعر الدورة والمدرّبة')}</span>
+      <p className="media-note">{t(
+        'This price is for the entire course. One purchase unlocks every published level, section and lesson inside this course. Students never pay again for content inside the same course.',
+        'هذا السعر للدورة كاملة. عملية شراء واحدة تفتح كل المستويات والأقسام والدروس المنشورة داخل هذه الدورة، ولا يدفع الطالب مرة أخرى على محتوى داخل نفس الدورة.'
+      )}</p>
       <div className="admin-form-grid three">
-        <label className="field">{t('Price (USD)','السعر بالدولار')}<input name="price" type="number" step="0.01" min="0" defaultValue={((initial?.priceMinor ?? 0) / 100).toFixed(2)} /></label>
+        <label className="field">{t('Full course price (USD)','سعر الدورة كاملة بالدولار')}<input name="price" type="number" step="0.01" min="0" defaultValue={((initial?.priceMinor ?? 0) / 100).toFixed(2)} /></label>
         <label className="field">{t('Sale price — optional','سعر التخفيض — اختياري')}<input name="salePrice" type="number" step="0.01" min="0" defaultValue={initial?.salePriceMinor != null ? (initial.salePriceMinor / 100).toFixed(2) : ''} /></label>
         <label className="field">{t('Currency','العملة')}<input name="currency" defaultValue={initial?.currency ?? 'USD'} maxLength={3} /></label>
       </div>
