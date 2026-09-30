@@ -57,7 +57,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         {user ? <>
           <Link href="/dashboard">My academy</Link>
           <details className="account-menu">
-            <summary aria-label="Open account menu"><span className="menu-icon" aria-hidden="true">☰</span><span className="menu-label">Menu</span></summary>
+            <summary aria-label="Open account menu"><span className="menu-icon" aria-hidden="true"><svg className="menu-svg" viewBox="0 0 20 20" aria-hidden="true" fill="none"><path d="M3 5h14M3 10h14M3 15h14" /></svg></span><span className="menu-label">Menu</span></summary>
             <div className="account-menu-panel">
               <span className="account-menu-name">{user.fullName}</span>
               <Link href="/dashboard">Dashboard</Link>
@@ -68,7 +68,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             </div>
           </details>
         </> : <>
-          <Link href="/login">Sign in <span aria-hidden="true">↗</span></Link>
+          <Link className="icon-link" href="/login">Sign in <svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="M6 4h6v6M12 4 5 11" /></svg></Link>
           <Link className="button small" href="/register">Join the academy</Link>
         </>}
       </nav>
