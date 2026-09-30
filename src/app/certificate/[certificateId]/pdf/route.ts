@@ -20,7 +20,7 @@ export async function GET(_: Request, context: { params: Promise<{ certificateId
   return new NextResponse(new Uint8Array(pdf), {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="${certificate.certificateId}.pdf"`,
+      'Content-Disposition': `attachment; filename="${certificate.certificateId}.pdf"`,
       'Cache-Control': 'public, max-age=300',
     },
   });
