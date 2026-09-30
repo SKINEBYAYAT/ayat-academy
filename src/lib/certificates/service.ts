@@ -11,6 +11,13 @@ function newCertificateId() {
   return 'AYAT-' + crypto.randomBytes(10).toString('hex').toUpperCase();
 }
 
+export function formatCertificateStudentName(value: string) {
+  const cleaned = value.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+  return cleaned.replace(/(^|[\s'-])(\p{L})/gu, (_, prefix: string, letter: string) =>
+    prefix + letter.toLocaleUpperCase()
+  );
+}
+
 export async function ensureCertificateForCompletion(
   userId: mongoose.Types.ObjectId,
   courseId: mongoose.Types.ObjectId | string,
@@ -34,7 +41,7 @@ export async function ensureCertificateForCompletion(
         certificateId: newCertificateId(),
         userId,
         courseId: course._id,
-        studentName: user.fullName,
+        studentName: formatCertificateStudentName(user.fullName),
         courseName: course.title,
         brandName: settings?.businessName || 'Ayat Academy',
         completedAt: progress.completedAt,
