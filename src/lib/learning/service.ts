@@ -67,10 +67,21 @@ export function progressStats(
   lessons: Array<{ _id: unknown; required?: boolean }>,
   completedLessonIds: Array<unknown> = [],
 ) {
+  const lessonIds = lessons.map(lesson => String(lesson._id));
+  const completed = new Set(completedLessonIds.map(String));
+  const completedCount = lessonIds.filter(id => completed.has(id)).length;
+  const percentage = lessonIds.length === 0 ? 0 : Math.round((completedCount / lessonIds.length) * 100);
+  return { lessonCount: lessonIds.length, completedCount, percentage };
+}
+
+export function requiredProgressStats(
+  lessons: Array<{ _id: unknown; required?: boolean }>,
+  completedLessonIds: Array<unknown> = [],
+) {
   const requiredIds = lessons.filter(lesson => lesson.required !== false).map(lesson => String(lesson._id));
   const completed = new Set(completedLessonIds.map(String));
   const completedRequired = requiredIds.filter(id => completed.has(id)).length;
-  const percentage = requiredIds.length === 0 ? 0 : Math.round((completedRequired / requiredIds.length) * 100);
+  const percentage = requiredIds.length === 0 ? 100 : Math.round((completedRequired / requiredIds.length) * 100);
   return { requiredCount: requiredIds.length, completedRequired, percentage };
 }
 
@@ -105,7 +116,7 @@ export async function listStudentCourses(userId: mongoose.Types.ObjectId) {
       course,
       progress,
       percentage: stats.percentage,
-      completed: stats.requiredCount > 0 && stats.percentage === 100,
+      completed: stats.lessonCount > 0 && stats.percentage === 100,
       lessonCount: visibleLessons.length,
       certificate: certificateByCourse.get(String(course._id)) ?? null,
     });
