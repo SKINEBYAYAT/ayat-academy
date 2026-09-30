@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/auth/session';
 import { Level, Section, Lesson } from '@/lib/db/models/courses';
 import { contentAction } from '@/lib/admin/course-validation';
-import { assertLessonHierarchy, assertSectionHierarchy, cascadeDeleteLevel, cascadeDeleteSection, getCourseContent, getCourseOr404 } from '@/lib/admin/course-service';
+import { assertLessonHierarchy, assertSectionHierarchy, cascadeDeleteLevel, cascadeDeleteSection, deleteLessonWithAssets, getCourseContent, getCourseOr404 } from '@/lib/admin/course-service';
 import { errorResponse, readJson, sameOrigin, HttpError } from '@/lib/http';
 
 export async function GET(_: Request, context: { params: Promise<{ courseId: string }> }) {
@@ -67,9 +67,8 @@ export async function POST(request: Request, context: { params: Promise<{ course
       return NextResponse.json({ item });
     }
     if (input.action === 'deleteLesson') {
-      const result = await Lesson.deleteOne({ _id: input.id, courseId });
-      if (!result.deletedCount) throw new HttpError(404, 'Lesson not found.');
-      return NextResponse.json({ message: 'Lesson deleted.' });
+      await deleteLessonWithAssets(courseId, input.id);
+      return NextResponse.json({ message: 'Lesson and stored media deleted.' });
     }
     if (input.action === 'reorder') {
       if (input.kind === 'level') {
