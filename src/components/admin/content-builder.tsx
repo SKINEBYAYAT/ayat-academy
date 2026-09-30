@@ -17,7 +17,6 @@ type Lesson = {
   videoAssetId?: string;
   resources?: LessonResourceDraft[];
   published: boolean;
-  required: boolean;
   preview: boolean;
   durationSeconds?: number;
   order: number;
@@ -160,7 +159,6 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
           durationSeconds: durationMinutes > 0 ? Math.round(durationMinutes * 60) : null,
           preview: form.get('preview') === 'on',
           published: form.get('published') === 'on',
-          required: form.get('required') === 'on',
           order: Number(form.get('order') || 0),
           videoAssetId: lessonVideo,
           resources,
@@ -262,7 +260,7 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
                     <div>
                       <strong>{lesson.title}</strong>
                       <small>
-                        {lesson.published ? t('Published', 'منشور') : t('Draft', 'مسودة')} · {lesson.required ? t('Required', 'إلزامي') : t('Optional', 'اختياري')}
+                        {lesson.published ? t('Published', 'منشور') : t('Draft', 'مسودة')}
                         {lesson.preview ? ' · ' + t('Free preview', 'معاينة مجانية') : ''}
                         {lesson.resources?.length ? ' · ' + lesson.resources.length + ' ' + t('resources', 'ملفات') : ''}
                       </small>
@@ -315,9 +313,8 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
 
             <div className="panel lesson-admin-section">
               <span className="eyebrow">{t('Lesson access', 'إعدادات الدرس')}</span>
-              <div className="admin-form-grid three">
+              <div className="admin-form-grid">
                 <label className="checkbox"><input name="preview" type="checkbox" defaultChecked={(editor.item as Lesson | undefined)?.preview} /><span>{t('Free preview', 'معاينة مجانية')}</span></label>
-                <label className="checkbox"><input name="required" type="checkbox" defaultChecked={(editor.item as Lesson | undefined)?.required ?? true} /><span>{t('Required', 'إلزامي')}</span></label>
                 <label className="checkbox"><input name="published" type="checkbox" defaultChecked={(editor.item as Lesson | undefined)?.published} /><span>{t('Published', 'منشور')}</span></label>
               </div>
             </div>
