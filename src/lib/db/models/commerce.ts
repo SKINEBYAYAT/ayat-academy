@@ -4,7 +4,7 @@ const orderSchema = new Schema({
   amountMinor: { type: Number, min: 0, required: true }, currency: { type: String, required: true },
   paymentMethod: { type: String, enum: ['whish', 'card', 'usdt'], required: true },
   paymentStatus: { type: String, enum: ['pending', 'awaiting_verification', 'paid', 'failed', 'rejected', 'refunded'], default: 'pending', index: true },
-  providerTransactionId: String, transactionHash: String, network: String, walletAddress: String, paidAt: Date,
+  providerTransactionId: String, providerInvoiceId: String, providerCheckoutUrl: String, providerStatus: String, transactionHash: String, network: String, walletAddress: String, paidAt: Date,
 }, { timestamps: true });
 orderSchema.index({ paymentMethod: 1, providerTransactionId: 1 }, { unique: true, partialFilterExpression: { providerTransactionId: { $type: 'string' } } });
 orderSchema.index({ userId: 1, courseId: 1, paymentStatus: 1, createdAt: -1 });
