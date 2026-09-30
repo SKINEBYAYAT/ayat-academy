@@ -6,7 +6,7 @@ import { deleteMuxAssetByRef } from '@/lib/media/mux';
 import { deleteBlobAsset } from '@/lib/media/storage';
 
 
-async function deleteLessonAssets(lessons: Array<{ _id: unknown; videoAssetId?: string; resources?: Array<{ privateAssetId?: string }> }>) {
+async function deleteLessonAssets(lessons: Array<{ _id: unknown; videoAssetId?: string | null; resources?: Array<{ privateAssetId?: string | null }> | null }>) {
   const deletingIds = lessons.map(lesson => lesson._id);
 
   for (const lesson of lessons) {
@@ -29,7 +29,7 @@ async function deleteLessonAssets(lessons: Array<{ _id: unknown; videoAssetId?: 
   }
 }
 
-async function deleteCourseImages(course: { _id: unknown; thumbnail?: string; coverImage?: string }) {
+async function deleteCourseImages(course: { _id: unknown; thumbnail?: string | null; coverImage?: string | null }) {
   for (const value of [course.thumbnail, course.coverImage]) {
     if (!value) continue;
     const shared = await Course.exists({
