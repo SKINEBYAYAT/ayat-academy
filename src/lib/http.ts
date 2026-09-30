@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 export class HttpError extends Error { constructor(public status: number, message: string) { super(message); } }
+
+function expectedOrigin() {
+  const explicit = process.env.APP_URL?.trim();
+  const vercel = process.env.VERCEL_URL?.trim();
+  const candidate = explicit || (vercel ? `https://${vercel}` : '');
+  try {
+    const url = new URL(candidate);
+    if (!['http:', 'https:'].includes(url.protocol) || (process.env.NODE_ENV === 'production' && url.protocol !== 'https:')) throw new Error();
+    return url.origin;
+  } catch {
+    throw new HttpError(503, 'Application URL is not configured correctly.');
+  }
+}
+
 export function sameOrigin(request: Request) {
-  const expected = process.env.APP_URL;
-  if (!expected) throw new HttpError(503, 'Application URL is not configured.');
-  if (request.headers.get('origin') !== new URL(expected).origin) throw new HttpError(403, 'Request origin is not allowed.');
+  if (request.headers.get('origin') !== expectedOrigin()) throw new HttpError(403, 'Request origin is not allowed.');
   if (!request.headers.get('content-type')?.startsWith('application/json')) throw new HttpError(415, 'JSON is required.');
 }
 export async function readJson(request: Request) {
