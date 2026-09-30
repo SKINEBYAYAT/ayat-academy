@@ -224,8 +224,8 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
             <h2>{level.title}</h2>
           </div>
           <div className="builder-actions">
-            <button aria-label={t('Move up', 'تحريك للأعلى')} disabled={levelIndex === 0} onClick={() => move('level', levels.map(i => i._id), levelIndex, -1)}>↑</button>
-            <button aria-label={t('Move down', 'تحريك للأسفل')} disabled={levelIndex === levels.length - 1} onClick={() => move('level', levels.map(i => i._id), levelIndex, 1)}>↓</button>
+            <button aria-label={t('Move up', 'تحريك للأعلى')} disabled={levelIndex === 0} onClick={() => move('level', levels.map(i => i._id), levelIndex, -1)}><span className="reorder-icon reorder-up" aria-hidden="true" /></button>
+            <button aria-label={t('Move down', 'تحريك للأسفل')} disabled={levelIndex === levels.length - 1} onClick={() => move('level', levels.map(i => i._id), levelIndex, 1)}><span className="reorder-icon reorder-down" aria-hidden="true" /></button>
             <button onClick={() => openEditor({ type: 'level', item: level })}>{t('Edit', 'تعديل')}</button>
             <button onClick={() => openEditor({ type: 'section', parent: level._id })}>{t('+ Section', '+ قسم')}</button>
             <button className="danger-link" onClick={() => confirm(t('Delete this level and everything inside it?', 'حذف هذا المستوى وكل ما بداخله؟')) && act({ action: 'deleteLevel', id: level._id })}>{t('Delete', 'حذف')}</button>
@@ -244,8 +244,8 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
                   <h3>{section.title}</h3>
                 </div>
                 <div className="builder-actions">
-                  <button aria-label={t('Move up', 'تحريك للأعلى')} disabled={sectionIndex === 0} onClick={() => move('section', sections.map(i => i._id), sectionIndex, -1)}>↑</button>
-                  <button aria-label={t('Move down', 'تحريك للأسفل')} disabled={sectionIndex === sections.length - 1} onClick={() => move('section', sections.map(i => i._id), sectionIndex, 1)}>↓</button>
+                  <button aria-label={t('Move up', 'تحريك للأعلى')} disabled={sectionIndex === 0} onClick={() => move('section', sections.map(i => i._id), sectionIndex, -1)}><span className="reorder-icon reorder-up" aria-hidden="true" /></button>
+                  <button aria-label={t('Move down', 'تحريك للأسفل')} disabled={sectionIndex === sections.length - 1} onClick={() => move('section', sections.map(i => i._id), sectionIndex, 1)}><span className="reorder-icon reorder-down" aria-hidden="true" /></button>
                   <button onClick={() => openEditor({ type: 'section', item: section })}>{t('Edit', 'تعديل')}</button>
                   <button onClick={() => openEditor({ type: 'lesson', parent: section._id })}>{t('+ Lesson', '+ درس')}</button>
                   <button className="danger-link" onClick={() => confirm(t('Delete this section and all lessons inside it?', 'حذف هذا القسم وكل الدروس داخله؟')) && act({ action: 'deleteSection', id: section._id })}>{t('Delete', 'حذف')}</button>
@@ -267,8 +267,8 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
                     </div>
                   </div>
                   <div className="builder-actions">
-                    <button aria-label={t('Move up', 'تحريك للأعلى')} disabled={lessonIndex === 0} onClick={() => move('lesson', lessons.map(i => i._id), lessonIndex, -1)}>↑</button>
-                    <button aria-label={t('Move down', 'تحريك للأسفل')} disabled={lessonIndex === lessons.length - 1} onClick={() => move('lesson', lessons.map(i => i._id), lessonIndex, 1)}>↓</button>
+                    <button aria-label={t('Move up', 'تحريك للأعلى')} disabled={lessonIndex === 0} onClick={() => move('lesson', lessons.map(i => i._id), lessonIndex, -1)}><span className="reorder-icon reorder-up" aria-hidden="true" /></button>
+                    <button aria-label={t('Move down', 'تحريك للأسفل')} disabled={lessonIndex === lessons.length - 1} onClick={() => move('lesson', lessons.map(i => i._id), lessonIndex, 1)}><span className="reorder-icon reorder-down" aria-hidden="true" /></button>
                     <button onClick={() => openEditor({ type: 'lesson', item: lesson })}>{t('Edit', 'تعديل')}</button>
                     <button className="danger-link" onClick={() => confirm(t('Delete this lesson?', 'حذف هذا الدرس؟')) && act({ action: 'deleteLesson', id: lesson._id })}>{t('Delete', 'حذف')}</button>
                   </div>
