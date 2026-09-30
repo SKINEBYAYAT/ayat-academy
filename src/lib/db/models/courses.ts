@@ -7,7 +7,7 @@ const courseSchema = new Schema({
   currency: { type: String, default: 'USD' }, published: { type: Boolean, default: false },
   featured: { type: Boolean, default: false }, requirements: [String], learningOutcomes: [String],
   instructorName: String, instructorBio: String, estimatedMinutes: Number,
-  certificateEnabled: { type: Boolean, default: false }, order: { type: Number, default: 0 },
+  certificateEnabled: { type: Boolean, default: true }, order: { type: Number, default: 0 },
 }, { timestamps: true });
 courseSchema.index({ published: 1, featured: 1, order: 1 });
 export const Course = (models.Course as Model<InferSchemaType<typeof courseSchema>>) || model('Course', courseSchema);
