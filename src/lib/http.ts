@@ -16,7 +16,17 @@ function expectedOrigin() {
 }
 
 export function sameOrigin(request: Request) {
-  if (request.headers.get('origin') !== expectedOrigin()) throw new HttpError(403, 'Request origin is not allowed.');
+  const origin = request.headers.get('origin');
+  let requestOrigin = '';
+  try { requestOrigin = new URL(request.url).origin; } catch {}
+
+  // Accept the actual host serving this request (Vercel production aliases/custom domains)
+  // or the configured canonical APP_URL. This keeps CSRF protection without breaking login
+  // whenever Vercel serves the same deployment from a different production hostname.
+  const allowed = new Set<string>([requestOrigin]);
+  try { allowed.add(expectedOrigin()); } catch {}
+
+  if (!origin || !allowed.has(origin)) throw new HttpError(403, 'Request origin is not allowed.');
   if (!request.headers.get('content-type')?.startsWith('application/json')) throw new HttpError(415, 'JSON is required.');
 }
 export async function readJson(request: Request) {
