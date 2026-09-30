@@ -2,6 +2,43 @@ import 'server-only';
 import mongoose from 'mongoose';
 import { Course, Level, Section, Lesson } from '@/lib/db/models/courses';
 import { HttpError } from '@/lib/http';
+import { deleteMuxAssetByRef } from '@/lib/media/mux';
+import { deleteBlobAsset } from '@/lib/media/storage';
+
+
+async function deleteLessonAssets(lessons: Array<{ _id: unknown; videoAssetId?: string; resources?: Array<{ privateAssetId?: string }> }>) {
+  const deletingIds = lessons.map(lesson => lesson._id);
+
+  for (const lesson of lessons) {
+    if (lesson.videoAssetId) {
+      const sharedVideo = await Lesson.exists({
+        _id: { $nin: deletingIds },
+        videoAssetId: lesson.videoAssetId,
+      });
+      if (!sharedVideo) await deleteMuxAssetByRef(lesson.videoAssetId);
+    }
+
+    for (const resource of lesson.resources ?? []) {
+      if (!resource.privateAssetId) continue;
+      const sharedResource = await Lesson.exists({
+        _id: { $nin: deletingIds },
+        'resources.privateAssetId': resource.privateAssetId,
+      });
+      if (!sharedResource) await deleteBlobAsset(resource.privateAssetId);
+    }
+  }
+}
+
+async function deleteCourseImages(course: { _id: unknown; thumbnail?: string; coverImage?: string }) {
+  for (const value of [course.thumbnail, course.coverImage]) {
+    if (!value) continue;
+    const shared = await Course.exists({
+      _id: { $ne: course._id },
+      $or: [{ thumbnail: value }, { coverImage: value }],
+    });
+    if (!shared) await deleteBlobAsset(value);
+  }
+}
 
 export async function getCourseOr404(courseId: string) {
   if (!mongoose.Types.ObjectId.isValid(courseId)) throw new HttpError(404, 'Course not found.');
@@ -21,6 +58,16 @@ export async function getCourseContent(courseId: string) {
 }
 
 export async function cascadeDeleteCourse(courseId: string) {
+  const course = await Course.findById(courseId).lean();
+  if (!course) throw new HttpError(404, 'Course not found.');
+
+  const lessons = await Lesson.find({ courseId })
+    .select('+videoAssetId +resources.privateAssetId')
+    .lean();
+
+  await deleteLessonAssets(lessons);
+  await deleteCourseImages(course);
+
   await Promise.all([
     Lesson.deleteMany({ courseId }),
     Section.deleteMany({ courseId }),
@@ -32,6 +79,12 @@ export async function cascadeDeleteCourse(courseId: string) {
 export async function cascadeDeleteLevel(courseId: string, levelId: string) {
   const level = await Level.findOne({ _id: levelId, courseId });
   if (!level) throw new HttpError(404, 'Level not found.');
+
+  const lessons = await Lesson.find({ courseId, levelId })
+    .select('+videoAssetId +resources.privateAssetId')
+    .lean();
+  await deleteLessonAssets(lessons);
+
   await Promise.all([
     Lesson.deleteMany({ courseId, levelId }),
     Section.deleteMany({ courseId, levelId }),
@@ -42,10 +95,26 @@ export async function cascadeDeleteLevel(courseId: string, levelId: string) {
 export async function cascadeDeleteSection(courseId: string, sectionId: string) {
   const section = await Section.findOne({ _id: sectionId, courseId });
   if (!section) throw new HttpError(404, 'Section not found.');
+
+  const lessons = await Lesson.find({ courseId, sectionId })
+    .select('+videoAssetId +resources.privateAssetId')
+    .lean();
+  await deleteLessonAssets(lessons);
+
   await Promise.all([
     Lesson.deleteMany({ courseId, sectionId }),
     Section.deleteOne({ _id: sectionId, courseId }),
   ]);
+}
+
+export async function deleteLessonWithAssets(courseId: string, lessonId: string) {
+  const lesson = await Lesson.findOne({ _id: lessonId, courseId })
+    .select('+videoAssetId +resources.privateAssetId')
+    .lean();
+  if (!lesson) throw new HttpError(404, 'Lesson not found.');
+
+  await deleteLessonAssets([lesson]);
+  await Lesson.deleteOne({ _id: lessonId, courseId });
 }
 
 export async function duplicateCourse(courseId: string): Promise<{ id: string; slug: string }> {
