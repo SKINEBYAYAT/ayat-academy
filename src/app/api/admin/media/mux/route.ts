@@ -15,10 +15,10 @@ export async function POST(request: Request) {
       throw new HttpError(503, 'Mux video uploads are not enabled.');
     }
 
-    const origin = request.headers.get('origin');
-    if (!origin) throw new HttpError(403, 'Request origin is not allowed.');
-
-    const upload = await createMuxDirectUpload(origin);
+    // The admin endpoint itself is protected by sameOrigin + admin auth.
+    // Use wildcard CORS only on Mux's short-lived signed upload URL so
+    // production aliases/custom domains cannot break the browser PUT.
+    const upload = await createMuxDirectUpload('*');
     return NextResponse.json({
       uploadId: upload.id,
       uploadUrl: upload.url,
