@@ -6,61 +6,109 @@ function readableSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export function MediaPicker({ label, value, onChange, accept, kind = 'image', language = 'en' }: { label: string; value: string; onChange: (value: string) => void; accept: string; kind?: 'image'|'video'|'resource'; language?: 'en'|'ar' }) {
   const t = (en: string, ar: string) => language === 'ar' ? ar : en;
   const [preview, setPreview] = useState('');
   const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [selectedName, setSelectedName] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => () => { if (preview.startsWith('blob:')) URL.revokeObjectURL(preview); }, [preview]);
 
+  async function uploadMuxVideo(file: File) {
+    const create = await fetch('/api/admin/media/mux', { method: 'POST' });
+    const created = await create.json();
+    if (!create.ok) throw new Error(created.error ?? t('Unable to start video upload.', 'تعذر بدء رفع الفيديو.'));
+
+    setStatus(t('Uploading video to secure storage…', 'جارٍ رفع الفيديو إلى التخزين الآمن…'));
+    const upload = await fetch(created.uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type || 'application/octet-stream' },
+      body: file,
+    });
+    if (!upload.ok) throw new Error(t('Video upload failed.', 'فشل رفع الفيديو.'));
+
+    setStatus(t('Upload complete. Mux is processing the video…', 'اكتمل الرفع. جارٍ معالجة الفيديو…'));
+    for (let attempt = 0; attempt < 120; attempt++) {
+      await wait(attempt < 10 ? 2000 : 3000);
+      const response = await fetch('/api/admin/media/mux?uploadId=' + encodeURIComponent(created.uploadId), { cache: 'no-store' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? t('Unable to process video.', 'تعذرت معالجة الفيديو.'));
+      if (result.ready && result.assetRef) {
+        onChange(result.assetRef);
+        setStatus(t('Video is ready and secured.', 'الفيديو جاهز ومحمي.'));
+        return;
+      }
+      setStatus(t('Processing video…', 'جارٍ معالجة الفيديو…'));
+    }
+    throw new Error(t('Mux is still processing this video. Please try again in a few minutes.', 'ما زال Mux يعالج الفيديو. حاولي مجدداً بعد بضع دقائق.'));
+  }
+
+  async function uploadRegular(file: File) {
+    const body = new FormData();
+    body.set('file', file);
+    body.set('kind', kind);
+    const response = await fetch('/api/admin/media', { method: 'POST', body });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error ?? t('Upload failed.', 'فشل الرفع.'));
+    onChange(result.media.url);
+  }
+
   async function choose(file?: File) {
     if (!file) return;
     setError('');
+    setStatus('');
     setSelectedName(file.name);
     setSelectedSize(readableSize(file.size));
     if (preview.startsWith('blob:')) URL.revokeObjectURL(preview);
     setPreview(URL.createObjectURL(file));
     setBusy(true);
     try {
-      const body = new FormData(); body.set('file', file); body.set('kind', kind);
-      const response = await fetch('/api/admin/media', { method: 'POST', body });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? 'Upload failed.');
-      onChange(result.media.url);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Upload failed.'); }
-    finally { setBusy(false); }
+      if (kind === 'video') await uploadMuxVideo(file);
+      else await uploadRegular(file);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('Upload failed.', 'فشل الرفع.'));
+    } finally {
+      setBusy(false);
+    }
   }
 
   const visual = preview || value;
   const isVideo = kind === 'video';
+  const muxReady = isVideo && value.startsWith('mux:');
 
   return <div className={`media-picker ${isVideo ? 'video-upload-card' : ''}`}>
     <span className="field-label">{label}</span>
     {isVideo && <p className="media-note">{t('Choose the lesson video directly from your phone or computer.','اختاري فيديو الدرس مباشرة من الهاتف أو الكمبيوتر.')}</p>}
 
-    {visual ? <div className="media-preview">
-      {kind === 'image' ? <img src={visual} alt="" /> : kind === 'video' ? <video src={visual} controls preload="metadata" /> : <div className="file-preview">{visual.split('/').pop()}</div>}
+    {muxReady && !preview ? <div className="media-empty">
+      <strong>{t('Secure video uploaded', 'تم رفع الفيديو بشكل آمن')}</strong>
+      <span>{t('The video is stored in Mux and will play only for students with access.', 'الفيديو محفوظ على Mux وسيظهر فقط للطلاب الذين لديهم صلاحية الوصول.')}</span>
+    </div> : visual ? <div className="media-preview">
+      {kind === 'image' ? <img src={visual} alt="" /> : kind === 'video' ? <video src={visual.startsWith('mux:') ? undefined : visual} controls preload="metadata" /> : <div className="file-preview">{visual.split('/').pop()}</div>}
     </div> : <button className="media-empty media-empty-button" type="button" onClick={() => input.current?.click()}>
       <strong>{isVideo ? t('Upload lesson video','رفع فيديو الدرس') : t('Choose image','اختيار صورة')}</strong>
       <span>{isVideo ? t('MP4, MOV or another browser-supported video file','MP4 أو MOV أو أي صيغة فيديو يدعمها المتصفح') : t('Tap to choose from your device','اضغطي للاختيار من جهازك')}</span>
     </button>}
 
     {selectedName && <div className="media-file-meta"><strong>{selectedName}</strong><small>{selectedSize}</small></div>}
+    {status && <p className="media-note"><strong>{status}</strong></p>}
 
     <input ref={input} hidden type="file" accept={accept} onChange={e => choose(e.target.files?.[0])} />
     <div className="actions">
       <button className="button secondary small" type="button" disabled={busy} onClick={() => input.current?.click()}>
-        {busy ? t('Uploading…','جارٍ الرفع…') : isVideo ? t('Choose or replace video','اختيار أو تبديل الفيديو') : t('Choose or replace','اختيار أو تبديل')}
+        {busy ? t('Uploading / processing…','جارٍ الرفع / المعالجة…') : isVideo ? t('Choose or replace video','اختيار أو تبديل الفيديو') : t('Choose or replace','اختيار أو تبديل')}
       </button>
-      {(visual || value) && <button className="button secondary small" type="button" onClick={() => { setPreview(''); setSelectedName(''); setSelectedSize(''); onChange(''); }}>{t('Remove','حذف')}</button>}
+      {(visual || value) && <button className="button secondary small" type="button" disabled={busy} onClick={() => { setPreview(''); setSelectedName(''); setSelectedSize(''); setStatus(''); onChange(''); }}>{t('Remove','حذف')}</button>}
     </div>
 
     {error && <p className="notice error">{error}</p>}
     {isVideo
-      ? <p className="media-note"><strong>{t('Secure video setup:','إعداد الفيديو الآمن:')}</strong> {t('Mux is being connected for protected course playback. Do not upload final paid-course videos until the Mux upload flow is finished.','يتم تجهيز Mux لتشغيل الفيديوهات المحمية، لذلك لا ترفعي الفيديوهات النهائية المدفوعة قبل اكتمال الربط.')}</p>
+      ? <p className="media-note">{t('Videos upload directly to Mux and are saved only after secure processing finishes.','يتم رفع الفيديو مباشرة إلى Mux وحفظه بعد انتهاء المعالجة الآمنة.')}</p>
       : <p className="media-note">{t('Choose a clear JPG, PNG or WebP image.','اختاري صورة واضحة بصيغة JPG أو PNG أو WebP.')}</p>}
   </div>;
 }
