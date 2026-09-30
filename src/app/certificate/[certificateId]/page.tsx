@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Award, CheckCircle2 } from 'lucide-react';
-import { getPublicCertificate } from '@/lib/certificates/service';
+import { formatCertificateStudentName, getPublicCertificate } from '@/lib/certificates/service';
 import { CertificateDownloadActions } from '@/components/certificate-download-actions';
 
 export const dynamic = 'force-dynamic';
@@ -19,6 +19,7 @@ export default async function CertificatePage({
   if (!certificate) notFound();
 
   const valid = !certificate.revokedAt;
+  const studentName = formatCertificateStudentName(certificate.studentName);
   const date = new Date(certificate.completedAt).toLocaleDateString('en', {
     year: 'numeric',
     month: 'long',
@@ -52,7 +53,7 @@ export default async function CertificatePage({
           </div>
 
           <div className="certificate-recipient-block">
-            <h1>{certificate.studentName}</h1>
+            <h1>{studentName}</h1>
             <span className="certificate-name-underline" />
           </div>
 
@@ -99,7 +100,7 @@ export default async function CertificatePage({
           : 'This certificate has been revoked and can no longer be downloaded.'}</p>
 
         <dl className="certificate-details">
-          <dt>Student</dt><dd>{certificate.studentName}</dd>
+          <dt>Student</dt><dd>{studentName}</dd>
           <dt>Course</dt><dd>{certificate.courseName}</dd>
           <dt>Completed</dt><dd>{date}</dd>
           <dt>Certificate ID</dt><dd>{certificate.certificateId}</dd>
@@ -107,7 +108,7 @@ export default async function CertificatePage({
         </dl>
 
         {valid && <CertificateDownloadActions
-          studentName={certificate.studentName}
+          studentName={studentName}
           courseName={certificate.courseName}
           certificateId={certificate.certificateId}
           completedDate={date}
