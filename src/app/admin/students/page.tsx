@@ -2,6 +2,7 @@ import { requirePageUser } from '@/lib/auth/session';
 import { User } from '@/lib/db/models/auth';
 import { Course, Enrollment } from '@/lib/db/models/courses';
 import { StudentAccess } from '@/components/admin/student-access';
+import { StudentNameEditor } from '@/components/admin/student-name-editor';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,7 @@ export default async function StudentsPage() {
           <div><h3>{student.fullName}</h3><p>{student.email}</p></div>
           <span className="status-badge">{(byUser.get(String(student._id)) ?? []).length} courses</span>
         </div>
+        <StudentNameEditor userId={String(student._id)} fullName={student.fullName} />
         <StudentAccess userId={String(student._id)} courses={courseOptions} activeCourseIds={byUser.get(String(student._id)) ?? []} />
       </article>)}</div>}
   </section>;
