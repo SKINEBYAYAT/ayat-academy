@@ -9,6 +9,32 @@ export function effectiveCoursePrice(course: { priceMinor: number; salePriceMino
   return course.salePriceMinor != null ? course.salePriceMinor : course.priceMinor;
 }
 
+
+export async function enrollFreeCourse(
+  userId: mongoose.Types.ObjectId,
+  courseId: string,
+) {
+  if (!mongoose.Types.ObjectId.isValid(courseId)) throw new HttpError(404, 'Course not found.');
+
+  const course = await Course.findOne({ _id: courseId, published: true });
+  if (!course) throw new HttpError(404, 'Course not found.');
+
+  if (effectiveCoursePrice(course) !== 0) {
+    throw new HttpError(409, 'This course is not free.');
+  }
+
+  await Enrollment.findOneAndUpdate(
+    { userId, courseId: course._id },
+    {
+      $set: { active: true, source: 'purchase' },
+      $unset: { expiresAt: 1, grantedBy: 1 },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
+
+  return { course };
+}
+
 export async function createOrReuseOrder(
   userId: mongoose.Types.ObjectId,
   courseId: string,
