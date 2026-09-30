@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="site-header">
       <Link href="/" className="wordmark" aria-label="Ayat Academy home">ayat<span>ACADEMY</span></Link>
-      <nav aria-label="Main navigation">
+      <nav className={user ? 'authenticated' : 'guest'} aria-label="Main navigation">
         <Link href="/courses">Courses</Link>
         {user ? <>
           <Link href="/dashboard">My academy</Link>
