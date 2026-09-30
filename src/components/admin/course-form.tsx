@@ -41,7 +41,7 @@ export function CourseForm({ initial, courseId }: { initial?: CourseDraft; cours
       featured: form.get('featured') === 'on', requirements: lines('requirements'),
       learningOutcomes: lines('learningOutcomes'), instructorName: form.get('instructorName'),
       instructorBio: form.get('instructorBio'), estimatedMinutes: Number(form.get('estimatedMinutes') || 0) || null,
-      certificateEnabled: form.get('certificateEnabled') === 'on', order: Number(form.get('order') || 0),
+      certificateEnabled: true, order: Number(form.get('order') || 0),
     };
     try {
       const response = await fetch(courseId ? `/api/admin/courses/${courseId}` : '/api/admin/courses', {
@@ -122,10 +122,13 @@ export function CourseForm({ initial, courseId }: { initial?: CourseDraft; cours
 
     <div className="panel admin-form-section">
       <span className="eyebrow">{t('Visibility & certificate','الظهور والشهادة')}</span>
-      <div className="admin-form-grid three">
+      <p className="media-note">{t(
+        'A certificate is automatically issued to every student who completes all published lessons in this course.',
+        'يتم إصدار شهادة تلقائياً لكل طالب يُكمل جميع الدروس المنشورة في هذه الدورة.'
+      )}</p>
+      <div className="admin-form-grid">
         <label className="checkbox"><input name="published" type="checkbox" defaultChecked={initial?.published} /><span>{t('Published','منشورة')}</span></label>
         <label className="checkbox"><input name="featured" type="checkbox" defaultChecked={initial?.featured} /><span>{t('Featured','مميزة')}</span></label>
-        <label className="checkbox"><input name="certificateEnabled" type="checkbox" defaultChecked={initial?.certificateEnabled} /><span>{t('Certificate enabled','تفعيل الشهادة')}</span></label>
       </div>
       <label className="field small-field">{t('Display order','ترتيب الظهور')}
         <input name="order" type="number" min="0" defaultValue={initial?.order ?? 0} />
