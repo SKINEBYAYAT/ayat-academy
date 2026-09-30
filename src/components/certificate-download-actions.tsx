@@ -57,7 +57,6 @@ export function CertificateDownloadActions({
     ctx.font = '64px Georgia, "Times New Roman", serif';
     ctx.fillText('ayat', 800, 155);
     ctx.font = '600 18px Arial, sans-serif';
-    ctx.letterSpacing = '8px';
     ctx.fillText('A C A D E M Y', 800, 196);
 
     ctx.fillStyle = muted;
