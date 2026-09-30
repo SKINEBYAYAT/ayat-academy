@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BookOpen } from 'lucide-react';
 import { requirePageUser } from '@/lib/auth/session';
-import { LogoutButton, ProfileForm } from '@/components/account-actions';
+import { ProfileForm } from '@/components/account-actions';
 import { listStudentCourses } from '@/lib/learning/service';
 
 export const metadata: Metadata = { title: 'Your learning space', robots: { index: false, follow: false } };
@@ -19,10 +19,7 @@ export default async function Dashboard() {
         <h1>Hello, {user.fullName.split(' ')[0]}.</h1>
         <p>Continue where you left off, or begin something new.</p>
       </div>
-      <div className="actions">
-        {user.role === 'admin' && <Link className="button secondary small" href="/admin">Administration</Link>}
-        <LogoutButton />
-      </div>
+      {user.role === 'admin' && <div className="actions"><Link className="button secondary small" href="/admin">Administration</Link></div>}
     </div>
 
     <div className="workspace-grid">
