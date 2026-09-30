@@ -1,7 +1,8 @@
 'use client';
 import { useRef } from 'react';
 
-export function RichTextEditor({ name, defaultValue = '' }: { name: string; defaultValue?: string }) {
+export function RichTextEditor({ name, defaultValue = '', language = 'en' }: { name: string; defaultValue?: string; language?: 'en'|'ar' }) {
+  const t = (en: string, ar: string) => language === 'ar' ? ar : en;
   const ref = useRef<HTMLTextAreaElement>(null);
   function wrap(before: string, after = before, placeholder = 'text') {
     const el = ref.current; if (!el) return;
@@ -16,15 +17,15 @@ export function RichTextEditor({ name, defaultValue = '' }: { name: string; defa
     el.setRangeText(prefix, lineStart, lineStart, 'end'); el.focus();
   }
   return <div className="rich-editor">
-    <div className="rich-toolbar" aria-label="Formatting">
-      <button type="button" onClick={() => line('## ')}>Heading</button>
-      <button type="button" onClick={() => wrap('**')}>Bold</button>
-      <button type="button" onClick={() => wrap('*')}>Italic</button>
-      <button type="button" onClick={() => line('- ')}>• List</button>
-      <button type="button" onClick={() => line('1. ')}>1. List</button>
-      <button type="button" onClick={() => wrap('[', '](https://)', 'link text')}>Link</button>
+    <div className="rich-toolbar" aria-label={t('Formatting','التنسيق')}>
+      <button type="button" onClick={() => line('## ')}>{t('Heading','عنوان')}</button>
+      <button type="button" onClick={() => wrap('**')}>{t('Bold','عريض')}</button>
+      <button type="button" onClick={() => wrap('*')}>{t('Italic','مائل')}</button>
+      <button type="button" onClick={() => line('- ')}>{t('• List','• قائمة')}</button>
+      <button type="button" onClick={() => line('1. ')}>{t('1. List','1. قائمة')}</button>
+      <button type="button" onClick={() => wrap('[', '](https://)', 'link text')}>{t('Link','رابط')}</button>
     </div>
     <textarea ref={ref} name={name} defaultValue={defaultValue} rows={12} maxLength={50000} />
-    <small>Formatting is stored as safe Markdown text, not raw HTML.</small>
+    <small>{t('Formatting is stored as safe Markdown text, not raw HTML.','يتم حفظ التنسيق كنص Markdown آمن وليس كود HTML خام.')}</small>
   </div>;
 }
