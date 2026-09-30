@@ -33,11 +33,13 @@ export async function login(data: unknown, request: Request) {
   // Valid fixed bcrypt hash prevents a fast path for unknown accounts.
   const valid = await verifyPassword(input.password, user?.passwordHash ?? '$2b$12$R9h/cIPz0gi.URNNX3kh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW');
   if (!user || !valid) throw new HttpError(401, 'Email or password is incorrect.');
-  const device = (await cookies()).get(deviceCookie)?.value;
-  if (user.role !== 'admin' && user.emailVerifiedAt && device) {
-    const trusted = await TrustedDevice.exists({ tokenHash: hashToken(device), userId: user._id, authVersion: user.authVersion, userAgentHash: hashToken(request.headers.get('user-agent') ?? ''), expiresAt: { $gt: new Date() } });
-    if (trusted) { await createSession(user); return NextResponse.json({ redirect: '/dashboard' }); }
+  // Email verification is required only once. After the account has been
+  // verified, future sign-ins use email + password without another code.
+  if (user.emailVerifiedAt) {
+    await createSession(user);
+    return NextResponse.json({ redirect: user.role === 'admin' ? '/admin' : '/dashboard' });
   }
+
   return NextResponse.json({ challenge: await sendChallenge(user, 'login') });
 }
 export async function verify(data: unknown, request: Request) {
