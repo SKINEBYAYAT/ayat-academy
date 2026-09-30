@@ -9,6 +9,7 @@ export function CheckoutForm({
   courseId,
   priceLabel,
   availability,
+  isFree = false,
 }: {
   courseId: string;
   priceLabel: string;
@@ -16,6 +17,7 @@ export function CheckoutForm({
     card: { enabled: boolean; reason: string };
     usdt: { enabled: boolean };
   };
+  isFree?: boolean;
 }) {
   const router = useRouter();
   const firstEnabled: Method | null = availability.usdt.enabled ? 'usdt' : availability.card.enabled ? 'card' : null;
@@ -24,14 +26,14 @@ export function CheckoutForm({
   const [error, setError] = useState('');
 
   async function submit() {
-    if (!method) return;
+    if (!isFree && !method) return;
     setBusy(true);
     setError('');
     try {
       const response = await fetch('/api/checkout/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId, paymentMethod: method }),
+        body: JSON.stringify(isFree ? { courseId } : { courseId, paymentMethod: method }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? 'Unable to create order.');
@@ -48,6 +50,15 @@ export function CheckoutForm({
       <input type="radio" name="payment" checked={method === value} disabled={!enabled} onChange={() => setMethod(value)} />
       <div><strong>{title}</strong><span>{note}</span></div>
     </label>;
+  }
+
+  if (isFree) {
+    return <div className="checkout-form">
+      <div className="notice">This course is free. No payment method is required.</div>
+      {error && <div className="notice error">{error}</div>}
+      <button className="button checkout-submit" disabled={busy} onClick={submit}>{busy ? 'Enrolling…' : 'Enroll for free'}</button>
+      <p className="checkout-note">Access is granted immediately.</p>
+    </div>;
   }
 
   return <div className="checkout-form">
