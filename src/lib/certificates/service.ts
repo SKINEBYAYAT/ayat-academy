@@ -26,7 +26,6 @@ export async function ensureCertificateForCompletion(
   ]);
 
   if (!course || !user) throw new HttpError(404, 'Certificate data not found.');
-  if (!course.certificateEnabled) return null;
   if (!progress?.completedAt) throw new HttpError(409, 'Course is not completed.');
 
   for (let attempt = 0; attempt < 5; attempt++) {
