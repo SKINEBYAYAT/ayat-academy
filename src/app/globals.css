@@ -163,3 +163,64 @@
 .certificate-actions{display:grid}.certificate-actions .button{width:100%}.certificate-back-link{display:inline-block;margin-top:18px;font-size:12px}
 @media(max-width:980px){.certificate-shell{grid-template-columns:1fr}.certificate-side-panel{position:static}.certificate-art{max-width:100%}}
 @media(max-width:620px){.certificate-page{padding:0 3%;margin-top:26px}.certificate-art{padding:10px}.certificate-art:before{inset:7px;border-width:2px}.certificate-art:after{inset:14px}.certificate-inner{padding:5% 7% 4%}.certificate-wordmark{font-size:34px}.certificate-academy{font-size:6px;letter-spacing:3px;margin-top:8px}.certificate-kicker{font-size:7px;letter-spacing:2px}.certificate-presented,.certificate-completed-copy,.certificate-date{font-size:8px!important}.certificate-inner h1{font-size:28px}.certificate-inner h2{font-size:20px}.certificate-quote{font-size:8px}.certificate-footer-row{gap:8px}.certificate-footer-row small{font-size:5px}.certificate-footer-row strong{font-size:6px}.certificate-seal{width:42px;height:42px}.certificate-seal svg{width:20px}.certificate-seal span{font-size:5px}.certificate-side-panel{padding:22px}}
+
+
+/* Premium Ayat Academy certificate */
+.premium-certificate-page{max-width:1420px}
+.premium-certificate-shell{grid-template-columns:minmax(0,1.7fr) minmax(320px,.6fr);gap:30px}
+.premium-certificate-art{position:relative;aspect-ratio:1.414/1;background:linear-gradient(145deg,#fbfaf6 0%,#f6f2e9 100%);border:0;box-shadow:0 30px 80px #1e332913;padding:0;overflow:hidden}
+.premium-certificate-art:before,.premium-certificate-art:after{display:none}
+.certificate-frame-outer,.certificate-frame-inner{position:absolute;pointer-events:none;z-index:2}
+.certificate-frame-outer{inset:22px;border:2px solid var(--green)}
+.certificate-frame-inner{inset:34px;border:1px solid #c9b184}
+.certificate-glow{position:absolute;border-radius:50%;background:radial-gradient(circle,#e6ebde 0%,#e6ebde 58%,transparent 59%);z-index:1}
+.certificate-glow-top{width:230px;height:230px;top:-115px;left:-80px}
+.certificate-glow-bottom{width:300px;height:300px;right:-135px;bottom:-160px}
+.premium-certificate-inner{position:relative;z-index:3;height:100%;padding:5.7% 8% 4.8%;justify-content:flex-start}
+.premium-certificate-brand{margin:0 0 5%;gap:0}
+.premium-certificate-brand .certificate-wordmark{font-size:clamp(38px,4.2vw,58px);line-height:.9;letter-spacing:-3px}
+.premium-certificate-brand .certificate-academy{font-size:8px;letter-spacing:4.5px;margin-top:10px}
+.certificate-brand-line{display:block;width:150px;height:1px;background:#c9b184;margin-top:14px}
+.certificate-heading-block{text-align:center;display:grid;gap:11px}
+.certificate-heading-block .certificate-kicker{font-size:9px;letter-spacing:3.4px;margin:0}
+.certificate-heading-block .certificate-presented{font:italic clamp(12px,1.2vw,16px) Georgia,'Times New Roman',serif!important;color:#59655d!important}
+.certificate-recipient-block{display:grid;justify-items:center;margin-top:4.5%;width:100%}
+.certificate-recipient-block h1{font-size:clamp(35px,5vw,67px);line-height:1.03;margin:0;max-width:92%;color:var(--green);overflow-wrap:anywhere}
+.certificate-name-underline{display:block;width:min(58%,520px);height:1px;background:linear-gradient(90deg,transparent,#c8ae7d 18%,#c8ae7d 82%,transparent);margin-top:18px}
+.certificate-course-block{display:grid;justify-items:center;gap:9px;margin-top:4%;text-align:center}
+.certificate-course-block .certificate-completed-copy,.certificate-course-block .certificate-date{font-size:clamp(10px,1vw,14px)!important;color:var(--muted)!important}
+.certificate-course-block h2{font-size:clamp(23px,3vw,39px);line-height:1.08;color:#20382e;margin:0;max-width:88%;overflow-wrap:anywhere}
+.certificate-signature-row{width:100%;display:grid;grid-template-columns:minmax(0,1fr) 98px minmax(0,1fr);gap:24px;align-items:end;margin-top:auto;padding:5% 2% 0}
+.certificate-signature,.certificate-id-block{display:grid;gap:4px;min-width:0}
+.certificate-signature{text-align:left}.certificate-id-block{text-align:right}
+.certificate-signature-line,.certificate-id-line{height:1px;background:#c9b184;width:100%;margin-bottom:7px}
+.certificate-signature strong,.certificate-id-block strong{font:600 clamp(9px,.9vw,12px) Georgia,'Times New Roman',serif;color:var(--green);overflow-wrap:anywhere}
+.certificate-signature small,.certificate-id-block small{font-size:7px;letter-spacing:1.25px;text-transform:uppercase;color:var(--muted)}
+.certificate-medallion{display:grid;place-items:center;align-self:center}
+.certificate-medallion-ring{width:76px;height:76px;border:1px solid #c9b184;border-radius:50%;box-shadow:inset 0 0 0 6px #f7f5ef,inset 0 0 0 7px #d8c7a7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--green);background:#faf8f1}
+.certificate-medallion-ring span{font-size:6px;letter-spacing:1.6px;font-weight:700}
+.certificate-bottom-note{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;margin-top:3%;font:italic clamp(7px,.72vw,10px) Georgia,'Times New Roman',serif;color:#6c756d;white-space:nowrap}
+.certificate-bottom-note i{width:28px;height:1px;background:#c9b184}
+.premium-certificate-side-panel{border-radius:14px;padding:32px;background:rgba(255,253,248,.96);box-shadow:0 18px 55px #233a3010}
+.premium-certificate-side-panel h2{font-size:34px;margin:11px 0 13px}
+.premium-certificate-side-panel .certificate-details{grid-template-columns:100px minmax(0,1fr)}
+.certificate-valid-pill,.certificate-revoked-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}
+.certificate-valid-pill{background:#e8efe3;color:var(--green);border:1px solid #c8d5bf}
+.certificate-revoked-pill{background:#f5e7e2;color:#853c2c;border:1px solid #dcbcb0}
+@media(max-width:1080px){.premium-certificate-shell{grid-template-columns:1fr}.premium-certificate-side-panel{position:static}}
+@media(max-width:700px){
+  .premium-certificate-art{aspect-ratio:1.414/1}
+  .certificate-frame-outer{inset:10px}.certificate-frame-inner{inset:16px}
+  .premium-certificate-inner{padding:5.5% 7% 4%}
+  .premium-certificate-brand{margin-bottom:3.5%}
+  .premium-certificate-brand .certificate-wordmark{font-size:30px}
+  .premium-certificate-brand .certificate-academy{font-size:5px;letter-spacing:3px;margin-top:6px}
+  .certificate-brand-line{width:95px;margin-top:8px}
+  .certificate-heading-block{gap:4px}.certificate-heading-block .certificate-kicker{font-size:5px;letter-spacing:1.8px}.certificate-heading-block .certificate-presented{font-size:7px!important}
+  .certificate-recipient-block{margin-top:3%}.certificate-recipient-block h1{font-size:24px}.certificate-name-underline{margin-top:7px}
+  .certificate-course-block{gap:3px;margin-top:2.7%}.certificate-course-block .certificate-completed-copy,.certificate-course-block .certificate-date{font-size:6px!important}.certificate-course-block h2{font-size:16px}
+  .certificate-signature-row{grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr);gap:9px;padding:3.5% 3% 0}
+  .certificate-signature-line,.certificate-id-line{margin-bottom:3px}.certificate-signature strong,.certificate-id-block strong{font-size:5.2px}.certificate-signature small,.certificate-id-block small{font-size:3.8px;letter-spacing:.5px}
+  .certificate-medallion-ring{width:38px;height:38px;box-shadow:inset 0 0 0 3px #f7f5ef,inset 0 0 0 4px #d8c7a7}.certificate-medallion-ring svg{width:14px;height:14px}.certificate-medallion-ring span{font-size:3px;letter-spacing:.6px}
+  .certificate-bottom-note{font-size:4.4px;gap:5px;margin-top:2%}.certificate-bottom-note i{width:12px}
+}
