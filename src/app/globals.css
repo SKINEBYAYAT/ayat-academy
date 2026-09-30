@@ -224,3 +224,61 @@
   .certificate-medallion-ring{width:38px;height:38px;box-shadow:inset 0 0 0 3px #f7f5ef,inset 0 0 0 4px #d8c7a7}.certificate-medallion-ring svg{width:14px;height:14px}.certificate-medallion-ring span{font-size:3px;letter-spacing:.6px}
   .certificate-bottom-note{font-size:4.4px;gap:5px;margin-top:2%}.certificate-bottom-note i{width:12px}
 }
+
+
+/* Cross-device admin polish */
+.reorder-icon{display:block;width:8px;height:8px;border-right:1.7px solid currentColor;border-bottom:1.7px solid currentColor;margin:auto}
+.reorder-up{transform:rotate(225deg) translate(-1px,-1px)}
+.reorder-down{transform:rotate(45deg) translate(-1px,-1px)}
+.builder-actions button[aria-label]{width:34px;height:34px;display:inline-grid;place-items:center;padding:0;line-height:1;color:var(--green)}
+.builder-actions button[aria-label]:disabled{opacity:.35}
+.builder-row{min-width:0}
+.builder-copy{min-width:0}
+.builder-copy h2,.builder-copy h3,.builder-copy strong{overflow-wrap:anywhere}
+.account-menu summary{list-style:none}
+.account-menu summary::-webkit-details-marker{display:none}
+.account-menu{position:relative}
+.account-menu-panel{right:0;left:auto;min-width:220px}
+
+@media(max-width:850px){
+  .builder-row{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:10px 12px}
+  .builder-copy{grid-column:2;display:grid;gap:4px}
+  .builder-actions{grid-column:1 / -1;width:100%;padding-left:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .builder-actions button{min-height:40px}
+  .builder-actions button[aria-label]{width:100%;height:40px}
+  .builder-actions .danger-link{grid-column:span 2}
+  .lesson-row{padding-left:16px}
+  .builder-children{padding-left:8px}
+  .builder-section{border-left:0}
+  .collapse-button{width:34px;height:34px}
+  .builder-toolbar{align-items:stretch;flex-direction:column}
+  .builder-toolbar .button{width:100%}
+}
+
+@media(max-width:600px){
+  .site-header{gap:14px}
+  .site-header nav{gap:10px;min-width:0}
+  .site-header nav>a{font-size:12px}
+  .account-menu summary{display:flex;align-items:center;gap:6px}
+  .menu-label{display:none}
+  .account-menu-panel{position:absolute;top:calc(100% + 10px);right:0;width:min(280px,82vw);z-index:50}
+  .admin-page{padding:0 4%}
+  .admin-page-head h1{font-size:34px}
+  .panel{border-radius:10px}
+  .admin-form-section{padding:18px}
+  .media-picker{padding:12px}
+  .media-preview img{height:160px}
+  .builder-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .builder-actions button{font-size:11px;padding:8px}
+  .builder-actions .danger-link{grid-column:1 / -1}
+  .lesson-stage{padding:30px 18px 56px}
+  .lesson-topline{flex-direction:column}
+  .lesson-progress-controls{width:100%}
+  .lesson-progress-controls .button{width:100%}
+  .lesson-navigation{display:grid;grid-template-columns:1fr 1fr}
+  .student-course-card{grid-template-columns:1fr}
+  .student-course-image{min-height:190px}
+  .student-course-actions{display:grid;gap:8px}
+  .student-course-actions .button{width:100%;justify-self:stretch}
+  .premium-certificate-side-panel{padding:20px}
+}
