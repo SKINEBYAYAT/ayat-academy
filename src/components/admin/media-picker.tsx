@@ -117,6 +117,6 @@ export function MediaPicker({ label, value, onChange, accept, kind = 'image', la
     {error && <p className="notice error">{error}</p>}
     {isVideo
       ? <p className="media-note">{t('Videos upload directly to Mux and are saved only after secure processing finishes.','يتم رفع الفيديو مباشرة إلى Mux وحفظه بعد انتهاء المعالجة الآمنة.')}</p>
-      : <p className="media-note">{t('Choose a clear JPG, PNG or WebP image.','اختاري صورة واضحة بصيغة JPG أو PNG أو WebP.')}</p>}
+      : <p className="media-note">{t('Choose any common image from your device. JPG, PNG, WebP, AVIF, GIF, BMP, HEIC and HEIF are accepted up to 12 MB.','اختاري أي صورة شائعة من جهازك. يتم قبول JPG وPNG وWebP وAVIF وGIF وBMP وHEIC وHEIF حتى 12 ميغابايت.')}</p>}
   </div>;
 }
