@@ -14,7 +14,7 @@ export async function createSession(user: UserData & { _id: Types.ObjectId }) {
   const old = jar.get(sessionCookie)?.value;
   if (old) await Session.deleteOne({ tokenHash: hashToken(old) });
   const token = newToken();
-  const seconds = user.role === 'admin' ? 60 * 60 : 60 * 60 * 24 * 7;
+  const seconds = 60 * 60 * 24 * 30;
   await Session.create({ userId: user._id, authVersion: user.authVersion, role: user.role, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + seconds * 1000) });
   jar.set(sessionCookie, token, { ...cookieOptions, maxAge: seconds });
 }
