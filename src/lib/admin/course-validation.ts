@@ -51,7 +51,6 @@ export const lessonInput = z.object({
   durationSeconds: z.number().int().min(0).max(1_000_000).optional().nullable(),
   preview: z.boolean().default(false),
   published: z.boolean().default(false),
-  required: z.boolean().default(true),
   order: z.number().int().min(0).max(1_000_000).default(0),
   resources: z.array(z.object({ title: z.string().trim().min(1).max(160), privateAssetId: z.string().trim().min(1).max(500) })).max(50).default([]),
 });
