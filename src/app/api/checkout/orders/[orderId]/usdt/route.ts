@@ -7,13 +7,17 @@ import { createNowPaymentsInvoice, hasNowPaymentsConfig } from '@/lib/commerce/n
 import { errorResponse, HttpError, sameOrigin } from '@/lib/http';
 
 function publicOrigin(request: Request) {
+  const productionDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (productionDomain) return 'https://' + productionDomain;
+
   const configured = process.env.APP_URL?.trim();
   if (configured) {
     try {
       const url = new URL(configured);
-      if (url.protocol === 'https:') return url.origin;
+      if (url.protocol === 'https:' || process.env.NODE_ENV !== 'production') return url.origin;
     } catch {}
   }
+
   const url = new URL(request.url);
   if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') {
     throw new HttpError(503, 'Application URL is not configured correctly.');
