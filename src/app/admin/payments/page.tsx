@@ -2,7 +2,6 @@ import { requirePageUser } from '@/lib/auth/session';
 import { Order } from '@/lib/db/models/commerce';
 import { Course } from '@/lib/db/models/courses';
 import { User } from '@/lib/db/models/auth';
-import { OrderReviewActions } from '@/components/admin/order-review-actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +19,7 @@ export default async function PaymentsPage() {
   const coursesById = new Map(courses.map(course => [String(course._id), course]));
 
   return <section className="admin-page">
-    <div className="admin-page-head"><div><span className="eyebrow">Commerce</span><h1>Orders & payments</h1><p>Review payment state. USDT submissions can be manually approved or rejected; Whish and card remain disabled until their official integrations are complete.</p></div></div>
+    <div className="admin-page-head"><div><span className="eyebrow">Commerce</span><h1>Orders & payments</h1><p>Review payment state. Crypto payments are verified automatically through NOWPayments; Whish and card remain disabled until their official integrations are complete.</p></div></div>
 
     {orders.length === 0 ? <div className="panel empty-state"><h3>No orders yet.</h3><p>Checkout orders will appear here.</p></div> :
       <div className="order-admin-list">{orders.map(order => {
@@ -31,8 +30,7 @@ export default async function PaymentsPage() {
             <span className="status-badge">{order.paymentStatus.replaceAll('_', ' ')}</span>
             <h3>{course?.title || 'Course'}</h3>
             <p>{student?.fullName || 'Student'} · {student?.email || 'Unknown email'}</p>
-            {order.transactionHash && <p className="payment-hash"><strong>TX:</strong> {order.transactionHash}</p>}
-            {order.paymentMethod === 'usdt' && order.paymentStatus === 'awaiting_verification' && <OrderReviewActions orderId={String(order._id)} />}
+            {order.providerTransactionId && <p className="payment-hash"><strong>Provider payment:</strong> {order.providerTransactionId}</p>}
           </div>
           <dl className="order-admin-details">
             <dt>Method</dt><dd>{order.paymentMethod.toUpperCase()}</dd>
