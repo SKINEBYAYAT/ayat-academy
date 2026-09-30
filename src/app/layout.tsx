@@ -62,6 +62,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <span className="account-menu-name">{user.fullName}</span>
               <Link href="/dashboard">Dashboard</Link>
               <Link href="/profile">Your profile</Link>
+              <Link href="/certificates">Certificates</Link>
               {user.role === 'admin' && <Link href="/admin">Administration</Link>}
               <LogoutButton />
             </div>
