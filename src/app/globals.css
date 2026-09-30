@@ -130,3 +130,36 @@
 }
 
 .workspace-grid.single-column{grid-template-columns:1fr}.profile-page{max-width:760px}.profile-panel{max-width:620px;width:100%}
+
+
+/* Certificate experience */
+.certificate-page{max-width:1380px;margin:48px auto 90px;padding:0 4%;min-height:60vh}
+.certificate-earned-banner{max-width:1160px;margin:0 auto 22px;border:1px solid #bfd0b9;background:#e9f0e3;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;color:var(--green)}
+.certificate-earned-banner div{display:grid;gap:1px}.certificate-earned-banner span{font-size:12px;color:var(--muted)}
+.certificate-shell{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.65fr);gap:26px;align-items:start}
+.certificate-art{position:relative;overflow:hidden;aspect-ratio:1.414/1;background:var(--paper);border:1px solid #c9cfbf;box-shadow:0 25px 70px #22392e16;padding:22px}
+.certificate-art:before{content:"";position:absolute;inset:14px;border:3px solid var(--green);pointer-events:none}
+.certificate-art:after{content:"";position:absolute;inset:26px;border:1px solid var(--gold);pointer-events:none}
+.certificate-inner{position:relative;z-index:2;height:100%;padding:4.5% 6.5% 4%;display:flex;flex-direction:column;align-items:center;text-align:center}
+.certificate-orb{position:absolute;border-radius:50%;background:var(--sage);z-index:1}
+.certificate-orb-one{width:120px;height:120px;left:-20px;top:-20px}.certificate-orb-two{width:155px;height:155px;right:-38px;bottom:-42px}
+.certificate-brand{display:grid;justify-items:center;color:var(--green);margin-bottom:6%}
+.certificate-wordmark{font:54px/.85 Georgia,'Times New Roman',serif;letter-spacing:-4px}
+.certificate-academy{font:700 9px/1.2 Arial,sans-serif;letter-spacing:5px;margin-top:12px}
+.certificate-kicker{font:700 10px/1 Arial,sans-serif;letter-spacing:3.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4%}
+.certificate-presented,.certificate-completed-copy,.certificate-date{color:var(--muted)!important;font-size:clamp(12px,1.2vw,17px)!important}
+.certificate-inner h1{font-size:clamp(34px,4.8vw,68px);color:var(--green);margin:2% 0 1%;max-width:90%;overflow-wrap:anywhere}
+.certificate-rule{width:62%;height:1px;background:var(--gold);margin:1% 0 3%}
+.certificate-inner h2{font-size:clamp(24px,3.1vw,44px);color:var(--green);margin:1.5% 0 1%;max-width:90%;overflow-wrap:anywhere}
+.certificate-quote{margin-top:auto;font:italic clamp(12px,1.3vw,17px) Georgia,'Times New Roman',serif;color:var(--green);padding-top:3%}
+.certificate-footer-row{width:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:20px;padding-top:4%;text-align:left}
+.certificate-footer-row>div{display:grid;gap:3px}.certificate-footer-row small{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}.certificate-footer-row strong{font-size:9px;letter-spacing:.3px;overflow-wrap:anywhere}
+.certificate-footer-brand{text-align:right}.certificate-seal{width:68px;height:68px;border:1px solid var(--gold);border-radius:50%;display:flex!important;align-items:center;justify-content:center;color:var(--green);gap:2px!important}
+.certificate-seal span{font-size:8px;text-transform:uppercase;letter-spacing:1px}
+.certificate-side-panel{border:1px solid var(--line);background:#fffdf8;border-radius:12px;padding:28px;position:sticky;top:22px}
+.certificate-side-panel h2{font-size:32px;margin:10px 0 12px}.certificate-side-panel>p{font-size:13px;color:var(--muted);margin-bottom:20px}
+.certificate-side-panel .certificate-details{display:grid;grid-template-columns:110px 1fr;gap:10px 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;margin:0 0 20px}
+.certificate-side-panel .certificate-details dt{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0}.certificate-side-panel .certificate-details dd{margin:0;font-size:12px;overflow-wrap:anywhere}
+.certificate-actions{display:grid}.certificate-actions .button{width:100%}.certificate-back-link{display:inline-block;margin-top:18px;font-size:12px}
+@media(max-width:980px){.certificate-shell{grid-template-columns:1fr}.certificate-side-panel{position:static}.certificate-art{max-width:100%}}
+@media(max-width:620px){.certificate-page{padding:0 3%;margin-top:26px}.certificate-art{padding:10px}.certificate-art:before{inset:7px;border-width:2px}.certificate-art:after{inset:14px}.certificate-inner{padding:5% 7% 4%}.certificate-wordmark{font-size:34px}.certificate-academy{font-size:6px;letter-spacing:3px;margin-top:8px}.certificate-kicker{font-size:7px;letter-spacing:2px}.certificate-presented,.certificate-completed-copy,.certificate-date{font-size:8px!important}.certificate-inner h1{font-size:28px}.certificate-inner h2{font-size:20px}.certificate-quote{font-size:8px}.certificate-footer-row{gap:8px}.certificate-footer-row small{font-size:5px}.certificate-footer-row strong{font-size:6px}.certificate-seal{width:42px;height:42px}.certificate-seal svg{width:20px}.certificate-seal span{font-size:5px}.certificate-side-panel{padding:22px}}
