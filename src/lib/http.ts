@@ -35,7 +35,7 @@ export async function readJson(request: Request) {
   try { return JSON.parse(body); } catch { throw new HttpError(400, 'Invalid JSON.'); }
 }
 export function errorResponse(error: unknown) {
-  if (error instanceof HttpError) return NextResponse.json({ error: error.message }, { status: error.status });
+  if (error instanceof HttpError) { console.warn('Request rejected', { status: error.status, message: error.message }); return NextResponse.json({ error: error.message }, { status: error.status }); }
   if (error instanceof ZodError) return NextResponse.json({ error: error.issues[0]?.message ?? 'Invalid input.' }, { status: 400 });
   // Never include database queries, credentials, tokens, or provider errors in responses/logs.
   console.error('Request failed:', error instanceof Error ? error.name : 'UnknownError');
