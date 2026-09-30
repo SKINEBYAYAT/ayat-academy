@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPublicCertificate } from '@/lib/certificates/service';
+import { formatCertificateStudentName, getPublicCertificate } from '@/lib/certificates/service';
 import { certificatePdf } from '@/lib/certificates/pdf';
 
 export async function GET(_: Request, context: { params: Promise<{ certificateId: string }> }) {
@@ -10,7 +10,7 @@ export async function GET(_: Request, context: { params: Promise<{ certificateId
   }
 
   const pdf = certificatePdf({
-    studentName: certificate.studentName,
+    studentName: formatCertificateStudentName(certificate.studentName),
     courseName: certificate.courseName,
     brandName: certificate.brandName,
     certificateId: certificate.certificateId,
