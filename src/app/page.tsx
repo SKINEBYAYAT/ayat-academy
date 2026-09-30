@@ -11,10 +11,10 @@ export default function Home() {
   return <>
     <section className="home home-hero">
       <span className="eyebrow">Professional skincare education</span>
-      <h1>Beautiful care begins<br />with understanding.</h1>
+      <h1>Beautiful care begins with understanding.</h1>
       <p>Learn professional skincare through structured courses, practical lessons, and a learning experience designed to keep your progress clear.</p>
       <div className="actions">
-        <Link className="button" href="/courses">Explore courses ↗</Link>
+        <Link className="button" href="/courses">Explore courses <svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="M6 4h6v6M12 4 5 11" /></svg></Link>
         <Link className="button secondary" href="/login">Continue learning</Link>
       </div>
     </section>
