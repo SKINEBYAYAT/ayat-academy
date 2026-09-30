@@ -32,7 +32,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     return <div className="learning-shell">
       <aside className="learning-sidebar">
         <div className="learning-course-head">
-          <Link className="text-link" href="/dashboard">← My courses</Link>
+          <Link className="text-link icon-link" href="/dashboard"><svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="M10.5 3.5 6 8l4.5 4.5M6.5 8H13" /></svg> My courses</Link>
           <h2>{course.title}</h2>
           <div className="learning-progress"><span>{stats.percentage}% complete</span><div><i style={{ width: stats.percentage + '%' }} /></div></div>
         </div>
@@ -79,13 +79,13 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
         {lesson.resources?.length ? <section className="student-resources"><span className="eyebrow">Resources</span><div>
           {lesson.resources.map((resource, index) => {
             const href = resolvePrivateAsset(resource.privateAssetId);
-            return href ? <a className="resource-download" key={index} href={href} target="_blank" rel="noopener noreferrer">{resource.title || 'Resource'} ↗</a> : null;
+            return href ? <a className="resource-download icon-link" key={index} href={href} target="_blank" rel="noopener noreferrer">{resource.title || 'Resource'} <svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="M6 4h6v6M12 4 5 11" /></svg></a> : null;
           })}
         </div></section> : null}
 
         <div className="lesson-navigation">
-          {previous ? <Link className="button secondary" href={'/learn/' + course.slug + '/' + previous._id}>← Previous</Link> : <span />}
-          {next ? <Link className="button" href={'/learn/' + course.slug + '/' + next._id}>Next lesson →</Link> : <Link className="button secondary" href="/dashboard">Back to dashboard</Link>}
+          {previous ? <Link className="button secondary" href={'/learn/' + course.slug + '/' + previous._id}><svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="M10.5 3.5 6 8l4.5 4.5M6.5 8H13" /></svg> Previous</Link> : <span />}
+          {next ? <Link className="button" href={'/learn/' + course.slug + '/' + next._id}>Next lesson <svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="m5.5 3.5 4.5 4.5-4.5 4.5M3 8h6.5" /></svg></Link> : <Link className="button secondary" href="/dashboard">Back to dashboard</Link>}
         </div>
       </main>
     </div>;
