@@ -15,7 +15,7 @@ export function LogoutButton() {
     } catch (err) { setError(err instanceof Error ? err.message : 'Unable to sign out.'); }
     finally { setBusy(false); }
   }
-  return <div><button className="button secondary small" onClick={logout} disabled={busy}>{busy ? 'Signing out…' : 'Sign out ↗'}</button>{error && <p role="alert" className="notice error">{error}</p>}</div>;
+  return <div><button className="button secondary small" onClick={logout} disabled={busy}>{busy ? 'Signing out…' : 'Sign out'}</button>{error && <p role="alert" className="notice error">{error}</p>}</div>;
 }
 export function ProfileForm({ name }: { name: string }) {
   return <div className="profile-name-lock">
