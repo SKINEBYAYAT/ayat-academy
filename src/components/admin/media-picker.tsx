@@ -64,6 +64,8 @@ export function MediaPicker({ label, value, onChange, accept, kind = 'image', la
     const result = await response.json();
     if (!response.ok) throw new Error(result.error ?? t('Upload failed.', 'فشل الرفع.'));
     onChange(result.media.url);
+    setPreview('');
+    setStatus(t('Image uploaded successfully.', 'تم رفع الصورة بنجاح.'));
   }
 
   async function choose(file?: File) {
