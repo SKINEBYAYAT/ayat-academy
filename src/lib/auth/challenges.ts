@@ -13,7 +13,16 @@ export function deliverChallenge(email: string, token: string, code: string, pur
   after(async () => {
     try {
       await sendEmail({ to: email, kind: purpose === 'login' ? 'login' : 'password-reset', subject: purpose === 'login' ? 'Your Ayat Academy security code' : 'Reset your Ayat Academy password', text: purpose === 'login' ? `Your one-time security code is ${code}. It expires in 10 minutes. If you did not request this, do not share this code.` : `Reset your password: ${getAppUrl()}/reset-password#token=${token}\nThis link expires in 10 minutes and can only be used once.` });
-    } catch { console.error('Security email delivery failed. Check the configured email provider.'); }
+    } catch (error) {
+      const details = error as { name?: string; message?: string; code?: string; responseCode?: number; command?: string };
+      console.error('Security email delivery failed.', {
+        name: details?.name,
+        message: details?.message,
+        code: details?.code,
+        responseCode: details?.responseCode,
+        command: details?.command,
+      });
+    }
   });
 }
 export async function sendChallenge(user: UserData & { _id: Types.ObjectId }, purpose: 'login' | 'reset') {
