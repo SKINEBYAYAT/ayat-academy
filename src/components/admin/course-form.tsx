@@ -15,6 +15,8 @@ const slugify = (value: string) => value.toLowerCase().trim().replace(/[^a-z0-9]
 
 export function CourseForm({ initial, courseId }: { initial?: CourseDraft; courseId?: string }) {
   const router = useRouter();
+  const [lang, setLang] = useState<'en'|'ar'>('en');
+  const t = (en: string, ar: string) => lang === 'ar' ? ar : en;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [title, setTitle] = useState(initial?.title ?? '');
@@ -53,82 +55,83 @@ export function CourseForm({ initial, courseId }: { initial?: CourseDraft; cours
     finally { setBusy(false); }
   }
 
-  return <form className="course-form" onSubmit={submit}>
+  return <form className="course-form" onSubmit={submit} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="admin-language-row"><button type="button" className="button secondary small" onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}>{lang === 'en' ? 'العربية' : 'English'}</button></div>
     {error && <div className="notice error" role="alert">{error}</div>}
 
     <div className="panel admin-form-section">
-      <span className="eyebrow">Basic information / المعلومات الأساسية</span>
+      <span className="eyebrow">{t('Basic information','المعلومات الأساسية')}</span>
       <div className="admin-form-grid">
-        <label className="field">Course title / اسم الدورة
+        <label className="field">{t('Course title','اسم الدورة')}
           <input value={title} onChange={e => { setTitle(e.target.value); if (!slugTouched) setSlug(slugify(e.target.value)); }} required maxLength={160} />
-          <small>The public course name students will see. / اسم الدورة الذي سيظهر للطلاب.</small>
+          <small>{t('The public course name students will see.','اسم الدورة الذي سيظهر للطلاب.')}</small>
         </label>
-        <label className="field">Course URL / رابط الدورة
+        <label className="field">{t('Course URL','رابط الدورة')}
           <input value={slug} onChange={e => { setSlugTouched(true); setSlug(slugify(e.target.value)); }} required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" />
-          <small>{courseUrl} · English letters, numbers and hyphens only. / أحرف إنجليزية وأرقام وشرطات فقط.</small>
+          <small>{courseUrl} · {t('English letters, numbers and hyphens only.','أحرف إنجليزية وأرقام وشرطات فقط.')}</small>
         </label>
       </div>
-      <label className="field">Short description / الوصف المختصر
+      <label className="field">{t('Short description','الوصف المختصر')}
         <textarea name="shortDescription" defaultValue={initial?.shortDescription} maxLength={320} rows={3} />
-        <small>Short text for course cards. / وصف قصير يظهر في بطاقة الدورة.</small>
+        <small>{t('Short text for course cards.','وصف قصير يظهر في بطاقة الدورة.')}</small>
       </label>
-      <label className="field">Full description / الوصف الكامل
+      <label className="field">{t('Full description','الوصف الكامل')}
         <textarea name="description" defaultValue={initial?.description} maxLength={20000} rows={8} />
-        <small>Explain the course, who it is for, and what it covers. / اشرحي تفاصيل الدورة ولمن تناسب وماذا تشمل.</small>
+        <small>{t('Explain the course, who it is for, and what it covers.','اشرحي تفاصيل الدورة ولمن تناسب وماذا تشمل.')}</small>
       </label>
     </div>
 
     <div className="panel admin-form-section">
-      <span className="eyebrow">Course images / صور الدورة</span>
-      <p className="media-note">Thumbnail = small card image. Cover = large image inside the course page. / الصورة المصغرة للبطاقات، وصورة الغلاف تظهر داخل صفحة الدورة.</p>
+      <span className="eyebrow">{t('Course images','صور الدورة')}</span>
+      <p className="media-note">{t('Thumbnail = small card image. Cover = large image inside the course page.','الصورة المصغرة للبطاقات، وصورة الغلاف تظهر داخل صفحة الدورة.')}</p>
       <div className="admin-form-grid">
-        <MediaPicker label="Thumbnail / الصورة المصغرة" value={thumbnail} onChange={setThumbnail} accept="image/*" />
-        <MediaPicker label="Cover image / صورة الغلاف" value={coverImage} onChange={setCoverImage} accept="image/*" />
+        <MediaPicker label={t('Thumbnail','الصورة المصغرة')} language={lang} value={thumbnail} onChange={setThumbnail} accept="image/*" />
+        <MediaPicker label={t('Cover image','صورة الغلاف')} language={lang} value={coverImage} onChange={setCoverImage} accept="image/*" />
       </div>
     </div>
 
     <div className="panel admin-form-section">
-      <span className="eyebrow">Price & instructor / السعر والمدرّبة</span>
+      <span className="eyebrow">{t('Price & instructor','السعر والمدرّبة')}</span>
       <div className="admin-form-grid three">
-        <label className="field">Price (USD) / السعر بالدولار<input name="price" type="number" step="0.01" min="0" defaultValue={((initial?.priceMinor ?? 0) / 100).toFixed(2)} /></label>
-        <label className="field">Sale price — optional / سعر التخفيض — اختياري<input name="salePrice" type="number" step="0.01" min="0" defaultValue={initial?.salePriceMinor != null ? (initial.salePriceMinor / 100).toFixed(2) : ''} /></label>
-        <label className="field">Currency / العملة<input name="currency" defaultValue={initial?.currency ?? 'USD'} maxLength={3} /></label>
+        <label className="field">{t('Price (USD)','السعر بالدولار')}<input name="price" type="number" step="0.01" min="0" defaultValue={((initial?.priceMinor ?? 0) / 100).toFixed(2)} /></label>
+        <label className="field">{t('Sale price — optional','سعر التخفيض — اختياري')}<input name="salePrice" type="number" step="0.01" min="0" defaultValue={initial?.salePriceMinor != null ? (initial.salePriceMinor / 100).toFixed(2) : ''} /></label>
+        <label className="field">{t('Currency','العملة')}<input name="currency" defaultValue={initial?.currency ?? 'USD'} maxLength={3} /></label>
       </div>
       <div className="admin-form-grid">
-        <label className="field">Instructor name / اسم المدرّبة<input name="instructorName" defaultValue={initial?.instructorName} maxLength={120} /></label>
-        <label className="field">Estimated duration (minutes) / مدة الدورة بالدقائق<input name="estimatedMinutes" type="number" min="0" defaultValue={initial?.estimatedMinutes ?? ''} /></label>
+        <label className="field">{t('Instructor name','اسم المدرّبة')}<input name="instructorName" defaultValue={initial?.instructorName} maxLength={120} /></label>
+        <label className="field">{t('Estimated duration (minutes)','مدة الدورة بالدقائق')}<input name="estimatedMinutes" type="number" min="0" defaultValue={initial?.estimatedMinutes ?? ''} /></label>
       </div>
-      <label className="field">Instructor bio / نبذة عن المدرّبة<textarea name="instructorBio" defaultValue={initial?.instructorBio} rows={5} /></label>
+      <label className="field">{t('Instructor bio','نبذة عن المدرّبة')}<textarea name="instructorBio" defaultValue={initial?.instructorBio} rows={5} /></label>
     </div>
 
     <div className="panel admin-form-section">
-      <span className="eyebrow">Student information / معلومات الطالب</span>
+      <span className="eyebrow">{t('Student information','معلومات الطالب')}</span>
       <div className="admin-form-grid">
-        <label className="field">Requirements — one per line / المتطلبات — كل متطلب بسطر
+        <label className="field">{t('Requirements — one per line','المتطلبات — كل متطلب بسطر')}
           <textarea name="requirements" defaultValue={(initial?.requirements ?? []).join('\n')} rows={5} />
         </label>
-        <label className="field">What students will learn — one per line / ماذا سيتعلم الطالب — كل نقطة بسطر
+        <label className="field">{t('What students will learn — one per line','ماذا سيتعلم الطالب — كل نقطة بسطر')}
           <textarea name="learningOutcomes" defaultValue={(initial?.learningOutcomes ?? []).join('\n')} rows={5} />
         </label>
       </div>
     </div>
 
     <div className="panel admin-form-section">
-      <span className="eyebrow">Visibility & certificate / الظهور والشهادة</span>
+      <span className="eyebrow">{t('Visibility & certificate','الظهور والشهادة')}</span>
       <div className="admin-form-grid three">
-        <label className="checkbox"><input name="published" type="checkbox" defaultChecked={initial?.published} /><span>Published / منشورة</span></label>
-        <label className="checkbox"><input name="featured" type="checkbox" defaultChecked={initial?.featured} /><span>Featured / مميزة</span></label>
-        <label className="checkbox"><input name="certificateEnabled" type="checkbox" defaultChecked={initial?.certificateEnabled} /><span>Certificate enabled / تفعيل الشهادة</span></label>
+        <label className="checkbox"><input name="published" type="checkbox" defaultChecked={initial?.published} /><span>{t('Published','منشورة')}</span></label>
+        <label className="checkbox"><input name="featured" type="checkbox" defaultChecked={initial?.featured} /><span>{t('Featured','مميزة')}</span></label>
+        <label className="checkbox"><input name="certificateEnabled" type="checkbox" defaultChecked={initial?.certificateEnabled} /><span>{t('Certificate enabled','تفعيل الشهادة')}</span></label>
       </div>
-      <label className="field small-field">Display order / ترتيب الظهور
+      <label className="field small-field">{t('Display order','ترتيب الظهور')}
         <input name="order" type="number" min="0" defaultValue={initial?.order ?? 0} />
-        <small>0 appears first, then 1, 2, 3… / الرقم الأصغر يظهر أولاً.</small>
+        <small>{t('0 appears first, then 1, 2, 3…','الرقم الأصغر يظهر أولاً.')}</small>
       </label>
     </div>
 
     <div className="actions">
-      <button className="button" disabled={busy}>{busy ? 'Saving… / جارٍ الحفظ…' : courseId ? 'Save & continue / حفظ ومتابعة' : 'Create course / إنشاء الدورة'}</button>
-      <button className="button secondary" type="button" onClick={() => router.push('/admin/courses')}>Cancel / إلغاء</button>
+      <button className="button" disabled={busy}>{busy ? t('Saving…','جارٍ الحفظ…') : courseId ? t('Save & continue','حفظ ومتابعة') : t('Create course','إنشاء الدورة')}</button>
+      <button className="button secondary" type="button" onClick={() => router.push('/admin/courses')}>{t('Cancel','إلغاء')}</button>
     </div>
   </form>;
 }
