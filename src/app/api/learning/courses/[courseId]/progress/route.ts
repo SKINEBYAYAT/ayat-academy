@@ -68,7 +68,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ cours
       await progress.save();
     }
 
-    if (stats.lessonCount > 0 && stats.percentage === 100 && course.certificateEnabled) {
+    if (stats.lessonCount > 0 && stats.percentage === 100) {
       const certificate = await ensureCertificateForCompletion(user._id, course._id);
       certificateId = certificate?.certificateId ?? null;
     }
