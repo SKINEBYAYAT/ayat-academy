@@ -66,6 +66,7 @@ export async function POST(request: Request) {
   order.providerStatus = status;
 
   if (status === 'finished') {
+    await order.save();
     await markOrderPaidFromVerifiedProvider(order._id, paymentId);
   } else if (status === 'refunded') {
     order.paymentStatus = 'refunded';
