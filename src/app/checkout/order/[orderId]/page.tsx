@@ -26,9 +26,9 @@ export default async function OrderPage({ params }: { params: Promise<{ orderId:
 
   const statusCopy: Record<string, string> = {
     pending: 'Your order was created. Complete the payment below.',
-    awaiting_verification: 'Your payment was submitted and is waiting for verification.',
-    failed: 'The payment did not complete. You can return to checkout and try again.',
-    rejected: 'The submitted payment could not be verified. You can submit a different transaction.',
+    awaiting_verification: 'Your crypto payment is being confirmed automatically.',
+    failed: 'The payment did not complete. You can open the checkout and try again.',
+    rejected: 'The payment was not completed for the required amount.',
     refunded: 'This order was refunded.',
   };
 
@@ -41,26 +41,20 @@ export default async function OrderPage({ params }: { params: Promise<{ orderId:
 
       <dl className="order-details">
         <dt>Order ID</dt><dd>{String(order._id)}</dd>
-        <dt>Payment method</dt><dd>{order.paymentMethod.toUpperCase()}</dd>
+        <dt>Payment method</dt><dd>{order.paymentMethod === 'usdt' ? 'Crypto wallet' : order.paymentMethod.toUpperCase()}</dd>
         <dt>Amount</dt><dd>{(order.amountMinor / 100).toFixed(2)} {order.currency}</dd>
-        {order.transactionHash && <><dt>Transaction</dt><dd className="break-value">{order.transactionHash}</dd></>}
+        {order.providerStatus && <><dt>Provider status</dt><dd>{order.providerStatus.replaceAll('_', ' ')}</dd></>}
       </dl>
 
-      {order.paymentMethod === 'usdt' && methods.usdt.enabled && ['pending', 'rejected', 'failed'].includes(order.paymentStatus) && <section className="usdt-payment-box">
-        <span className="eyebrow">USDT payment</span>
-        <h2>Send the exact amount</h2>
-        <dl className="order-details">
-          <dt>Network</dt><dd>{methods.usdt.network}</dd>
-          <dt>Wallet</dt><dd className="break-value">{methods.usdt.wallet}</dd>
-          <dt>Amount</dt><dd>{(order.amountMinor / 100).toFixed(2)} USDT</dd>
-        </dl>
-        {methods.usdt.qr && <img className="usdt-qr" src={methods.usdt.qr} alt="USDT payment QR code" />}
-        {methods.usdt.instructions && <p>{methods.usdt.instructions}</p>}
+      {order.paymentMethod === 'usdt' && methods.usdt.enabled && order.paymentStatus !== 'refunded' && <section className="usdt-payment-box">
+        <span className="eyebrow">USDT · BNB Smart Chain</span>
+        <h2>Pay with your crypto wallet</h2>
+        <p>Use the secure hosted checkout to connect MetaMask or another supported Web3 wallet. Payment verification and course access are automatic.</p>
         <UsdtSubmitForm orderId={String(order._id)} />
       </section>}
 
-      {order.paymentMethod === 'usdt' && order.paymentStatus === 'awaiting_verification' && <div className="notice">
-        Your transaction has been submitted. An administrator must verify it before the course unlocks.
+      {order.paymentMethod === 'usdt' && !methods.usdt.enabled && <div className="notice error">
+        Crypto checkout is temporarily unavailable.
       </div>}
 
       {order.paymentMethod === 'whish' && <div className="notice">
