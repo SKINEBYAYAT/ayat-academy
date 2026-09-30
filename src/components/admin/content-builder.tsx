@@ -303,10 +303,10 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
             <div className="panel lesson-admin-section">
               <span className="eyebrow">{t('Lesson material', 'محتوى الدرس')}</span>
               <label className="field">{t('Written lesson content', 'المحتوى المكتوب')}
-                <RichTextEditor name="content" defaultValue={(editor.item as Lesson | undefined)?.content ?? ''} />
+                <RichTextEditor name="content" defaultValue={(editor.item as Lesson | undefined)?.content ?? ''} language={lang} />
               </label>
               <MediaPicker label={t('Lesson video', 'فيديو الدرس')} language={lang} value={lessonVideo} onChange={setLessonVideo} accept="video/*" kind="video" />
-              <ResourcePicker resources={lessonResources} onChange={setLessonResources} />
+              <ResourcePicker resources={lessonResources} onChange={setLessonResources} language={lang} />
               <label className="field">{t('Video duration (minutes)', 'مدة الفيديو بالدقائق')}
                 <input name="durationMinutes" type="number" min="0" step="0.1" defaultValue={(editor.item as Lesson | undefined)?.durationSeconds ? ((editor.item as Lesson).durationSeconds! / 60).toFixed(1) : ''} />
                 <small>{t('Example: 12.5 means 12 minutes 30 seconds.', 'مثال: 12.5 يعني 12 دقيقة و30 ثانية.')}</small>
