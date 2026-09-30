@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Award } from 'lucide-react';
 import { requirePageUser } from '@/lib/auth/session';
 import { Certificate } from '@/lib/db/models/commerce';
+import { formatCertificateStudentName } from '@/lib/certificates/service';
 
 export const metadata: Metadata = { title: 'Your certificates', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -34,7 +35,7 @@ export default async function CertificatesPage() {
           <div className="student-course-copy">
             <div className="status-row"><span className="status-badge published">Completed</span></div>
             <h3>{certificate.courseName}</h3>
-            <p>Issued to {certificate.studentName}</p>
+            <p>Issued to {formatCertificateStudentName(certificate.studentName)}</p>
             <div className="student-progress-row">
               <span>{new Date(certificate.completedAt).toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>
               <span>{certificate.certificateId}</span>
