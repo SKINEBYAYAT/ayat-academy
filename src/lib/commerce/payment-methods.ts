@@ -1,20 +1,19 @@
 import 'server-only';
 
-import { AdminSettings } from '@/lib/db/models/commerce';
+import { hasNowPaymentsConfig } from '@/lib/commerce/nowpayments';
 
 export async function getPaymentMethodState() {
-  const settings = await AdminSettings.findOne({ key: 'business' }).lean();
-
-  const usdtReady = Boolean(settings?.usdtWallet && settings?.usdtNetwork);
+  const usdtReady = hasNowPaymentsConfig();
   const cardCredentialsPresent = Boolean(process.env.CARD_PROVIDER && process.env.CARD_API_KEY);
 
   return {
     usdt: {
       enabled: usdtReady,
-      network: settings?.usdtNetwork ?? null,
-      wallet: settings?.usdtWallet ?? null,
-      qr: settings?.usdtQr ?? null,
-      instructions: settings?.usdtInstructions ?? null,
+      network: usdtReady ? 'BEP20' : null,
+      wallet: null,
+      qr: null,
+      instructions: null,
+      provider: usdtReady ? 'NOWPayments' : null,
     },
     whish: {
       enabled: false,
