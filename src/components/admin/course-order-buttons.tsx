@@ -26,7 +26,7 @@ export function CourseOrderButtons({ ids, index }: { ids: string[]; index: numbe
   }
 
   return <div className="course-order-buttons" aria-label="Course order">
-    <button type="button" disabled={busy || index === 0} onClick={() => move(-1)} title="Move course up">↑</button>
-    <button type="button" disabled={busy || index === ids.length - 1} onClick={() => move(1)} title="Move course down">↓</button>
+    <button type="button" disabled={busy || index === 0} onClick={() => move(-1)} title="Move course up" aria-label="Move course up"><span className="reorder-icon reorder-up" aria-hidden="true" /></button>
+    <button type="button" disabled={busy || index === ids.length - 1} onClick={() => move(1)} title="Move course down" aria-label="Move course down"><span className="reorder-icon reorder-down" aria-hidden="true" /></button>
   </div>;
 }
