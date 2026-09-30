@@ -2,7 +2,7 @@ import 'server-only';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { put } from '@vercel/blob';
+import { del, put } from '@vercel/blob';
 import { HttpError } from '@/lib/http';
 
 const allowed = {
@@ -79,4 +79,33 @@ export async function saveMedia(file: File, kind: keyof typeof allowed) {
     assetId: 'local-dev:' + kind + ':' + name,
     provider: 'local-dev',
   };
+}
+
+
+function blobUrlFromRef(value?: string | null) {
+  if (!value) return null;
+  const candidate = value.startsWith('blob:') ? value.slice(5) : value;
+  try {
+    const url = new URL(candidate);
+    return url.protocol === 'https:' && url.hostname.endsWith('.blob.vercel-storage.com')
+      ? url.toString()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteBlobAsset(value?: string | null) {
+  const url = blobUrlFromRef(value);
+  if (!url) return false;
+
+  const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  if (!token) throw new HttpError(503, 'Vercel Blob storage is not configured.');
+
+  try {
+    await del(url, { token });
+    return true;
+  } catch {
+    throw new HttpError(502, 'Unable to delete file from Vercel Blob.');
+  }
 }
