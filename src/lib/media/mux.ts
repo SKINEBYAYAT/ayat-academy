@@ -17,7 +17,7 @@ function authHeader() {
   return 'Basic ' + Buffer.from(tokenId + ':' + tokenSecret).toString('base64');
 }
 
-async function muxRequest(path: string, init?: RequestInit) {
+async function muxRequest(path: string, init?: RequestInit, options?: { allowNotFound?: boolean }) {
   const response = await fetch(muxApi + path, {
     ...init,
     headers: {
@@ -28,6 +28,7 @@ async function muxRequest(path: string, init?: RequestInit) {
     cache: 'no-store',
   });
   const body = await response.json().catch(() => ({}));
+  if (options?.allowNotFound && response.status === 404) return null;
   if (!response.ok) {
     console.error('Mux API error', response.status, body?.error?.type ?? body?.error?.message ?? 'unknown');
     throw new HttpError(502, 'Mux video service returned an error.');
@@ -102,4 +103,28 @@ export function muxPlaybackId(assetRef?: string | null) {
   if (!assetRef) return null;
   const match = assetRef.match(/^mux:([A-Za-z0-9_-]+)$/);
   return match?.[1] ?? null;
+}
+
+
+export async function deleteMuxAssetByRef(assetRef?: string | null) {
+  const playbackId = muxPlaybackId(assetRef);
+  if (!playbackId) return false;
+
+  const playback = await muxRequest(
+    '/playback-ids/' + encodeURIComponent(playbackId),
+    undefined,
+    { allowNotFound: true },
+  );
+  if (!playback) return true;
+
+  if (playback.object?.type !== 'asset' || !playback.object?.id) {
+    throw new HttpError(502, 'Mux playback is not attached to a video asset.');
+  }
+
+  await muxRequest(
+    '/assets/' + encodeURIComponent(playback.object.id),
+    { method: 'DELETE' },
+    { allowNotFound: true },
+  );
+  return true;
 }
