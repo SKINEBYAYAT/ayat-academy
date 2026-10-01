@@ -3,23 +3,20 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  BSC_CHAIN_ID_HEX,
-  BSC_CHAIN_NAME,
+  useAppKit,
+  useAppKitAccount,
+  useAppKitNetwork,
+  useAppKitProvider,
+  useWalletInfo,
+  type Provider,
+} from '@reown/appkit/react';
+import { bsc } from '@reown/appkit/networks';
+import { BrowserProvider, type Eip1193Provider } from 'ethers';
+import {
   BSC_EXPLORER_URL,
-  BSC_RPC_URL,
   BSC_USDT_CONTRACT,
   erc20TransferData,
 } from '@/lib/commerce/bsc-usdt';
-
-type EthereumProvider = {
-  request(args: { method: string; params?: unknown[] }): Promise<unknown>;
-};
-
-declare global {
-  interface Window {
-    ethereum?: EthereumProvider;
-  }
-}
 
 export function UsdtSubmitForm({
   orderId,
@@ -35,6 +32,12 @@ export function UsdtSubmitForm({
   existingTransactionHash?: string | null;
 }) {
   const router = useRouter();
+  const { open } = useAppKit();
+  const { address, isConnected } = useAppKitAccount({ namespace: 'eip155' });
+  const { switchNetwork } = useAppKitNetwork();
+  const { walletProvider } = useAppKitProvider<Provider>('eip155');
+  const { walletInfo } = useWalletInfo();
+
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(existingTransactionHash ? 'Checking your payment…' : '');
   const [txHash, setTxHash] = useState(existingTransactionHash ?? '');
@@ -85,9 +88,18 @@ export function UsdtSubmitForm({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingTransactionHash]);
 
+  async function connectWallet() {
+    setMessage('');
+    try {
+      await open({ view: 'Connect', namespace: 'eip155' });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to open wallet selection.');
+    }
+  }
+
   async function pay() {
-    if (!window.ethereum) {
-      setMessage('No compatible Web3 wallet was detected. Open this page in your wallet browser or connect a supported wallet.');
+    if (!isConnected || !address || !walletProvider) {
+      await connectWallet();
       return;
     }
 
@@ -95,62 +107,60 @@ export function UsdtSubmitForm({
     setMessage('');
 
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }) as string[];
-      const account = accounts?.[0];
-      if (!account) throw new Error('No wallet account was connected.');
+      await switchNetwork(bsc);
+      const provider = new BrowserProvider(walletProvider as Eip1193Provider);
+      const signer = await provider.getSigner(address);
 
-      try {
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: BSC_CHAIN_ID_HEX }],
-        });
-      } catch (error) {
-        if ((error as { code?: number })?.code !== 4902) throw error;
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: BSC_CHAIN_ID_HEX,
-            chainName: BSC_CHAIN_NAME,
-            nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
-            rpcUrls: [BSC_RPC_URL],
-            blockExplorerUrls: [BSC_EXPLORER_URL],
-          }],
-        });
+      setMessage('Approve the USDT payment in your selected wallet.');
+      const transaction = await signer.sendTransaction({
+        to: BSC_USDT_CONTRACT,
+        value: 0n,
+        data: erc20TransferData(recipient, BigInt(amountAtomic)),
+      });
+
+      if (!/^0x[0-9a-fA-F]{64}$/.test(transaction.hash)) {
+        throw new Error('Your wallet did not return a valid transaction.');
       }
 
-      setMessage('Wallet connected. Approve the payment in your wallet.');
-      const hash = await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: account,
-          to: BSC_USDT_CONTRACT,
-          value: '0x0',
-          data: erc20TransferData(recipient, BigInt(amountAtomic)),
-        }],
-      }) as string;
-
-      if (!/^0x[0-9a-fA-F]{64}$/.test(hash)) throw new Error('MetaMask did not return a valid transaction.');
-
-      setTxHash(hash);
+      setTxHash(transaction.hash);
       setMessage('Payment sent. Verifying it on BNB Smart Chain…');
-      await poll(hash);
+      await poll(transaction.hash);
     } catch (error) {
-      const walletError = error as { code?: number; message?: string };
-      if (walletError?.code === 4001) setMessage('Payment cancelled in your wallet.');
-      else setMessage(walletError?.message ?? 'Unable to complete the wallet payment.');
+      const walletError = error as { code?: number | string; message?: string };
+      if (walletError?.code === 4001 || walletError?.code === 'ACTION_REJECTED') {
+        setMessage('Payment cancelled in your wallet.');
+      } else {
+        setMessage(walletError?.message ?? 'Unable to complete the wallet payment.');
+      }
     } finally {
       setBusy(false);
     }
   }
 
+  const shortAddress = address ? address.slice(0, 6) + '…' + address.slice(-4) : '';
+  const walletName = walletInfo?.name || 'Wallet';
+
   return <div className="usdt-submit">
     <div className="notice">
-      Connect your Web3 wallet and approve <strong>{amountLabel} USDT</strong>. Payment goes directly from your wallet to Ayat Academy. We never receive your private key or recovery phrase.
+      Choose your preferred Web3 wallet and approve <strong>{amountLabel} USDT</strong> on BNB Smart Chain. Payment goes directly to Ayat Academy. We never receive your private key or recovery phrase.
     </div>
+
+    {isConnected && address && <div className="notice">
+      Connected: <strong>{walletName}</strong> · {shortAddress}
+      {' '}<button className="text-link" type="button" onClick={() => open({ view: 'Connect', namespace: 'eip155' })}>Change wallet</button>
+    </div>}
+
     {message && <div className="notice">{message}</div>}
     {txHash && <a className="text-link break-value" href={BSC_EXPLORER_URL + '/tx/' + txHash} target="_blank" rel="noreferrer">View transaction</a>}
-    <button className="button" type="button" disabled={busy || Boolean(existingTransactionHash)} onClick={pay}>
-      {busy ? 'Waiting for wallet…' : existingTransactionHash ? 'Payment submitted' : 'Connect Wallet & Pay'}
-    </button>
+
+    {!isConnected ? (
+      <button className="button" type="button" disabled={Boolean(existingTransactionHash)} onClick={connectWallet}>
+        Connect Wallet
+      </button>
+    ) : (
+      <button className="button" type="button" disabled={busy || Boolean(existingTransactionHash)} onClick={pay}>
+        {busy ? 'Waiting for wallet…' : existingTransactionHash ? 'Payment submitted' : 'Pay ' + amountLabel + ' USDT'}
+      </button>
+    )}
   </div>;
 }
