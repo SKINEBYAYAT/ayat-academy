@@ -50,7 +50,7 @@ export default async function OrderPage({ params }: { params: Promise<{ orderId:
       {order.paymentMethod === 'usdt' && methods.usdt.enabled && order.paymentStatus !== 'refunded' && <section className="usdt-payment-box">
         <span className="eyebrow">Secure wallet payment</span>
         <h2>Connect wallet & pay</h2>
-        <p>Connect MetaMask, approve the payment in your wallet, and stay on this page while Ayat Academy verifies it automatically.</p>
+        <p>Connect your preferred Web3 wallet and approve the payment, and stay on this page while Ayat Academy verifies it automatically.</p>
         <UsdtSubmitForm
           orderId={String(order._id)}
           recipient={methods.usdt.wallet!}
