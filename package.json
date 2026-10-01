@@ -25,7 +25,11 @@
     "@vercel/blob": "2.8.0",
     "@reown/appkit": "1.8.24",
     "@reown/appkit-adapter-ethers": "1.8.24",
-    "ethers": "6.17.0"
+    "ethers": "6.17.0",
+    "@x402/core": "2.28.0",
+    "@x402/evm": "2.28.0",
+    "@x402/extensions": "2.28.0",
+    "@x402/svm": "2.28.0"
   },
   "devDependencies": {
     "typescript": "6.0.3",
