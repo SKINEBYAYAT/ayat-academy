@@ -12,6 +12,8 @@ createAppKit({
   adapters: [new EthersAdapter()],
   networks: [bsc],
   defaultNetwork: bsc,
+  allWallets: 'SHOW',
+  enableWallets: true,
   projectId,
   metadata: {
     name: 'Ayat Academy',
