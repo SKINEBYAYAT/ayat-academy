@@ -7,8 +7,7 @@ import {
   useAppKitAccount,
   useAppKitNetwork,
   useAppKitProvider,
-  useWalletInfo,
-  type Provider,
+  useWalletInfo
 } from '@reown/appkit/react';
 import { bsc } from '@reown/appkit/networks';
 import { BrowserProvider, type Eip1193Provider } from 'ethers';
@@ -35,7 +34,7 @@ export function UsdtSubmitForm({
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount({ namespace: 'eip155' });
   const { switchNetwork } = useAppKitNetwork();
-  const { walletProvider } = useAppKitProvider<Provider>('eip155');
+  const { walletProvider } = useAppKitProvider<Eip1193Provider>('eip155');
   const { walletInfo } = useWalletInfo();
 
   const [busy, setBusy] = useState(false);
@@ -108,7 +107,7 @@ export function UsdtSubmitForm({
 
     try {
       await switchNetwork(bsc);
-      const provider = new BrowserProvider(walletProvider as Eip1193Provider);
+      const provider = new BrowserProvider(walletProvider);
       const signer = await provider.getSigner(address);
 
       setMessage('Approve the USDT payment in your selected wallet.');
