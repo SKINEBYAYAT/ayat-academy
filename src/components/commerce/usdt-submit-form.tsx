@@ -5,11 +5,9 @@ import { useRouter } from 'next/navigation';
 import {
   useAppKit,
   useAppKitAccount,
-  useAppKitNetwork,
   useAppKitProvider,
   useWalletInfo
 } from '@reown/appkit/react';
-import { bsc } from '@reown/appkit/networks';
 import { BrowserProvider, type Eip1193Provider } from 'ethers';
 import {
   BSC_EXPLORER_URL,
@@ -32,10 +30,8 @@ export function UsdtSubmitForm({
 }) {
   const router = useRouter();
   const { open } = useAppKit();
-  const { address, isConnected } = useAppKitAccount({ namespace: 'eip155' });
-  const { switchNetwork } = useAppKitNetwork();
+  const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider<Eip1193Provider>('eip155');
-  const { walletInfo } = useWalletInfo();
 
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(existingTransactionHash ? 'Checking your payment…' : '');
@@ -106,7 +102,6 @@ export function UsdtSubmitForm({
     setMessage('');
 
     try {
-      await switchNetwork(bsc);
       const provider = new BrowserProvider(walletProvider);
       const signer = await provider.getSigner(address);
 
@@ -137,7 +132,6 @@ export function UsdtSubmitForm({
   }
 
   const shortAddress = address ? address.slice(0, 6) + '…' + address.slice(-4) : '';
-  const walletName = walletInfo?.name || 'Wallet';
 
   return <div className="usdt-submit">
     <div className="notice">
@@ -145,7 +139,7 @@ export function UsdtSubmitForm({
     </div>
 
     {isConnected && address && <div className="notice">
-      Connected: <strong>{walletName}</strong> · {shortAddress}
+      Connected wallet: <strong>{shortAddress}</strong>
       {' '}<button className="text-link" type="button" onClick={() => open({ view: 'Connect', namespace: 'eip155' })}>Change wallet</button>
     </div>}
 
