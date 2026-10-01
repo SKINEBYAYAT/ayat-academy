@@ -19,7 +19,7 @@ export default async function PaymentsPage() {
   const coursesById = new Map(courses.map(course => [String(course._id), course]));
 
   return <section className="admin-page">
-    <div className="admin-page-head"><div><span className="eyebrow">Commerce</span><h1>Orders & payments</h1><p>Review payment state. Crypto payments are verified automatically through NOWPayments; Whish and card remain disabled until their official integrations are complete.</p></div></div>
+    <div className="admin-page-head"><div><span className="eyebrow">Commerce</span><h1>Orders & payments</h1><p>Review payment state. Crypto payments are sent from the student's connected wallet and verified automatically on BNB Smart Chain; Whish and card remain disabled until their integrations are complete.</p></div></div>
 
     {orders.length === 0 ? <div className="panel empty-state"><h3>No orders yet.</h3><p>Checkout orders will appear here.</p></div> :
       <div className="order-admin-list">{orders.map(order => {
@@ -30,7 +30,7 @@ export default async function PaymentsPage() {
             <span className="status-badge">{order.paymentStatus.replaceAll('_', ' ')}</span>
             <h3>{course?.title || 'Course'}</h3>
             <p>{student?.fullName || 'Student'} · {student?.email || 'Unknown email'}</p>
-            {order.providerTransactionId && <p className="payment-hash"><strong>Provider payment:</strong> {order.providerTransactionId}</p>}
+            {order.providerTransactionId && <p className="payment-hash"><strong>Blockchain transaction:</strong> {order.providerTransactionId}</p>}
           </div>
           <dl className="order-admin-details">
             <dt>Method</dt><dd>{order.paymentMethod.toUpperCase()}</dd>
