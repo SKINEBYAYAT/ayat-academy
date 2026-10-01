@@ -87,7 +87,7 @@ export function UsdtSubmitForm({
 
   async function pay() {
     if (!window.ethereum) {
-      setMessage('MetaMask was not detected. Open this page in MetaMask or install the MetaMask extension.');
+      setMessage('No compatible Web3 wallet was detected. Open this page in your wallet browser or connect a supported wallet.');
       return;
     }
 
@@ -118,7 +118,7 @@ export function UsdtSubmitForm({
         });
       }
 
-      setMessage('MetaMask is connected. Approve the payment in your wallet.');
+      setMessage('Wallet connected. Approve the payment in your wallet.');
       const hash = await window.ethereum.request({
         method: 'eth_sendTransaction',
         params: [{
@@ -136,7 +136,7 @@ export function UsdtSubmitForm({
       await poll(hash);
     } catch (error) {
       const walletError = error as { code?: number; message?: string };
-      if (walletError?.code === 4001) setMessage('Payment cancelled in MetaMask.');
+      if (walletError?.code === 4001) setMessage('Payment cancelled in your wallet.');
       else setMessage(walletError?.message ?? 'Unable to complete the wallet payment.');
     } finally {
       setBusy(false);
@@ -145,12 +145,12 @@ export function UsdtSubmitForm({
 
   return <div className="usdt-submit">
     <div className="notice">
-      Connect MetaMask and approve <strong>{amountLabel} USDT</strong>. Payment goes directly from your wallet to Ayat Academy. We never receive your private key or recovery phrase.
+      Connect your Web3 wallet and approve <strong>{amountLabel} USDT</strong>. Payment goes directly from your wallet to Ayat Academy. We never receive your private key or recovery phrase.
     </div>
     {message && <div className="notice">{message}</div>}
     {txHash && <a className="text-link break-value" href={BSC_EXPLORER_URL + '/tx/' + txHash} target="_blank" rel="noreferrer">View transaction</a>}
     <button className="button" type="button" disabled={busy || Boolean(existingTransactionHash)} onClick={pay}>
-      {busy ? 'Waiting for MetaMask…' : existingTransactionHash ? 'Payment submitted' : 'Connect MetaMask & Pay'}
+      {busy ? 'Waiting for wallet…' : existingTransactionHash ? 'Payment submitted' : 'Connect Wallet & Pay'}
     </button>
   </div>;
 }
