@@ -5,6 +5,7 @@ import { requirePageUser } from '@/lib/auth/session';
 import { Order } from '@/lib/db/models/commerce';
 import { Course } from '@/lib/db/models/courses';
 import { getPaymentMethodState } from '@/lib/commerce/payment-methods';
+import { usdtAtomicFromMinor } from '@/lib/commerce/bsc-usdt';
 import { UsdtSubmitForm } from '@/components/commerce/usdt-submit-form';
 
 export const dynamic = 'force-dynamic';
@@ -23,12 +24,13 @@ export default async function OrderPage({ params }: { params: Promise<{ orderId:
   if (order.paymentStatus === 'paid') redirect('/learn/' + course.slug);
 
   const methods = await getPaymentMethodState();
+  const amountLabel = (order.amountMinor / 100).toFixed(2);
 
   const statusCopy: Record<string, string> = {
-    pending: 'Your order was created. Complete the payment below.',
-    awaiting_verification: 'Your crypto payment is being confirmed automatically.',
-    failed: 'The payment did not complete. You can open the checkout and try again.',
-    rejected: 'The payment was not completed for the required amount.',
+    pending: 'Connect your wallet and approve the payment below.',
+    awaiting_verification: 'Your payment was sent and is being verified on BNB Smart Chain.',
+    failed: 'The wallet transaction failed. You can try again.',
+    rejected: 'The transaction did not match this order. You can try again.',
     refunded: 'This order was refunded.',
   };
 
@@ -41,29 +43,22 @@ export default async function OrderPage({ params }: { params: Promise<{ orderId:
 
       <dl className="order-details">
         <dt>Order ID</dt><dd>{String(order._id)}</dd>
-        <dt>Payment method</dt><dd>{order.paymentMethod === 'usdt' ? 'Crypto wallet' : order.paymentMethod.toUpperCase()}</dd>
-        <dt>Amount</dt><dd>{(order.amountMinor / 100).toFixed(2)} {order.currency}</dd>
-        {order.providerStatus && <><dt>Provider status</dt><dd>{order.providerStatus.replaceAll('_', ' ')}</dd></>}
+        <dt>Payment</dt><dd>USDT · BNB Smart Chain</dd>
+        <dt>Amount</dt><dd>{amountLabel} USDT</dd>
       </dl>
 
       {order.paymentMethod === 'usdt' && methods.usdt.enabled && order.paymentStatus !== 'refunded' && <section className="usdt-payment-box">
-        <span className="eyebrow">USDT · BNB Smart Chain</span>
-        <h2>Pay with your crypto wallet</h2>
-        <p>Use the secure hosted checkout to connect MetaMask or another supported Web3 wallet. Payment verification and course access are automatic.</p>
-        <UsdtSubmitForm orderId={String(order._id)} />
+        <span className="eyebrow">Secure wallet payment</span>
+        <h2>Connect wallet & pay</h2>
+        <p>Connect MetaMask, approve the payment in your wallet, and stay on this page while Ayat Academy verifies it automatically.</p>
+        <UsdtSubmitForm
+          orderId={String(order._id)}
+          recipient={methods.usdt.wallet!}
+          amountAtomic={usdtAtomicFromMinor(order.amountMinor).toString()}
+          amountLabel={amountLabel}
+          existingTransactionHash={order.paymentStatus === 'awaiting_verification' ? order.transactionHash ?? null : null}
+        />
       </section>}
-
-      {order.paymentMethod === 'usdt' && !methods.usdt.enabled && <div className="notice error">
-        Crypto checkout is temporarily unavailable.
-      </div>}
-
-      {order.paymentMethod === 'whish' && <div className="notice">
-        Whish Pay is currently paused. Return to checkout and choose another available method.
-      </div>}
-
-      {order.paymentMethod === 'card' && <div className="notice error">
-        Card payments are not live yet. A specific card provider must be selected and integrated before this method can safely process payments.
-      </div>}
 
       <div className="actions">
         <Link className="button secondary" href={'/checkout/' + course.slug}>Change payment method</Link>
