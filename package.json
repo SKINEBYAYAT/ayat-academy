@@ -22,7 +22,10 @@
     "nodemailer": "10.0.10",
     "server-only": "0.0.1",
     "lucide-react": "1.47.0",
-    "@vercel/blob": "2.8.0"
+    "@vercel/blob": "2.8.0",
+    "@reown/appkit": "1.8.24",
+    "@reown/appkit-adapter-ethers": "1.8.24",
+    "ethers": "6.17.0"
   },
   "devDependencies": {
     "typescript": "6.0.3",
