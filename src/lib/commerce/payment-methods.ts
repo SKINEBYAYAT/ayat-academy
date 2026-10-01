@@ -1,19 +1,18 @@
 import 'server-only';
 
-import { hasNowPaymentsConfig } from '@/lib/commerce/nowpayments';
+import { BUSINESS_BSC_WALLET } from '@/lib/commerce/bsc-usdt';
 
 export async function getPaymentMethodState() {
-  const usdtReady = hasNowPaymentsConfig();
   const cardCredentialsPresent = Boolean(process.env.CARD_PROVIDER && process.env.CARD_API_KEY);
 
   return {
     usdt: {
-      enabled: usdtReady,
-      network: usdtReady ? 'BEP20' : null,
-      wallet: null,
+      enabled: true,
+      network: 'BEP20',
+      wallet: BUSINESS_BSC_WALLET,
       qr: null,
       instructions: null,
-      provider: usdtReady ? 'NOWPayments' : null,
+      provider: 'direct-wallet',
     },
     whish: {
       enabled: false,
