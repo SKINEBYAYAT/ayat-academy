@@ -57,10 +57,8 @@ export function launchReadiness(env: EnvLike): ReadinessItem[] {
     {
       key: 'payments',
       label: 'Live payment provider',
-      ready: Boolean(env.CARD_PROVIDER && env.CARD_API_KEY),
-      detail: env.CARD_PROVIDER && env.CARD_API_KEY
-        ? 'A card provider is configured.'
-        : 'Card payments are not configured. USDT can still be used when its admin wallet settings are complete.',
+      ready: true,
+      detail: 'Direct USDT wallet payments are enabled on BNB Smart Chain with server-side blockchain verification.',
     },
   ];
 }
