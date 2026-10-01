@@ -64,7 +64,7 @@ export function CheckoutForm({
   return <div className="checkout-form">
     <div className="checkout-methods">
       {option('card', 'Visa / Card', availability.card.enabled, availability.card.enabled ? 'Pay securely by card.' : availability.card.reason)}
-      {option('usdt', 'Crypto wallet · USDT', availability.usdt.enabled, availability.usdt.enabled ? 'Connect MetaMask, approve the USDT payment, and unlock the course automatically after blockchain verification.' : 'Crypto wallet checkout is not configured yet.')}
+      {option('usdt', 'Crypto wallet · USDT', availability.usdt.enabled, availability.usdt.enabled ? 'Connect your preferred Web3 wallet, approve the USDT payment, and unlock the course automatically after blockchain verification.' : 'Crypto wallet checkout is not configured yet.')}
     </div>
     {error && <div className="notice error">{error}</div>}
     {!firstEnabled && <div className="notice error">No payment method is currently available. Please try again later.</div>}
