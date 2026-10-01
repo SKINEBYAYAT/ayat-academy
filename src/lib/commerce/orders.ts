@@ -82,9 +82,6 @@ export async function createOrReuseOrder(
     if (reusable.amountMinor !== amountMinor || reusable.currency !== course.currency) {
       reusable.amountMinor = amountMinor;
       reusable.currency = course.currency;
-      reusable.providerInvoiceId = undefined;
-      reusable.providerCheckoutUrl = undefined;
-      reusable.providerStatus = undefined;
       await reusable.save();
     }
     return { alreadyOwned: false, course, order: reusable };
