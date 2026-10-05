@@ -475,3 +475,14 @@ img,video,svg{max-width:100%}
 
 /* Header cleanup: no divider above mobile navigation */
 @media(max-width:850px){.site-header nav,.site-header nav.authenticated,.site-header nav.guest{border-top:0!important}}
+
+
+/* Mobile guest CTA: preserve the filled button styling after responsive nav rules */
+@media(max-width:700px){
+  .site-header nav.guest>a.button{
+    background:var(--green);
+    color:#fff;
+    border-color:var(--green);
+  }
+  .site-header nav.guest>a.button:hover{background:#3c5d4c}
+}
