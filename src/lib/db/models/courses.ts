@@ -7,7 +7,9 @@ const courseSchema = new Schema({
   currency: { type: String, default: 'USD' }, published: { type: Boolean, default: false },
   featured: { type: Boolean, default: false }, requirements: [String], learningOutcomes: [String],
   instructorName: String, instructorBio: String, estimatedMinutes: Number,
-  certificateEnabled: { type: Boolean, default: true }, examEnabled: { type: Boolean, default: false },\n  examPassPercent: { type: Number, min: 1, max: 100, default: 70 }, examRetakeDays: { type: Number, min: 0, max: 365, default: 15 },\n  order: { type: Number, default: 0 },
+  certificateEnabled: { type: Boolean, default: true }, examEnabled: { type: Boolean, default: false },
+  examPassPercent: { type: Number, min: 1, max: 100, default: 70 }, examRetakeDays: { type: Number, min: 0, max: 365, default: 15 },
+  order: { type: Number, default: 0 },
 }, { timestamps: true });
 courseSchema.index({ published: 1, featured: 1, order: 1 });
 export const Course = (models.Course as Model<InferSchemaType<typeof courseSchema>>) || model('Course', courseSchema);
