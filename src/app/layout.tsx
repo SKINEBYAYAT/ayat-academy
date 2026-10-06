@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import { PwaRegister } from '@/components/pwa-register';
-import { WalletAppKitProvider } from '@/components/commerce/wallet-appkit-provider';
 import { LogoutButton } from '@/components/account-actions';
 import { currentUser } from '@/lib/auth/session';
 import './globals.css';
@@ -74,7 +73,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </>}
       </nav>
     </header>
-    <WalletAppKitProvider><main id="main">{children}</main></WalletAppKitProvider>
+    <main id="main">{children}</main>
     <footer className="site-footer"><span>AYAT ACADEMY</span><p>Knowledge is the beginning of beautiful care.</p><span>Skincare education, thoughtfully.</span></footer>
     <PwaRegister />
   </body></html>;
