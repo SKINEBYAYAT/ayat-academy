@@ -7,7 +7,7 @@ import { getPaymentMethodState } from '@/lib/commerce/payment-methods';
 
 const schema = z.object({
   courseId: z.string().regex(/^[a-f\d]{24}$/i),
-  paymentMethod: z.enum(['whish', 'card', 'usdt']).optional(),
+  paymentMethod: z.enum(['whish', 'card']).optional(),
 });
 
 export async function POST(request: Request) {
@@ -25,7 +25,6 @@ export async function POST(request: Request) {
     }
 
     const methods = await getPaymentMethodState();
-    if (input.paymentMethod === 'usdt' && !methods.usdt.enabled) throw new HttpError(503, 'USDT payments are not configured.');
     if (input.paymentMethod === 'whish' && !methods.whish.enabled) throw new HttpError(503, methods.whish.reason);
     if (input.paymentMethod === 'card' && !methods.card.enabled) throw new HttpError(503, methods.card.reason);
     const result = await createOrReuseOrder(user._id, input.courseId, input.paymentMethod);
