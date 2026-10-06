@@ -4,7 +4,8 @@ import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import { Certificate, AdminSettings } from '@/lib/db/models/commerce';
 import { Course, CourseProgress } from '@/lib/db/models/courses';
-import { User } from '@/lib/db/models/auth';\nimport { ExamAttempt } from '@/lib/db/models/exams';
+import { User } from '@/lib/db/models/auth';
+import { ExamAttempt } from '@/lib/db/models/exams';
 import { HttpError } from '@/lib/http';
 
 function newCertificateId() {
@@ -33,7 +34,12 @@ export async function ensureCertificateForCompletion(
   ]);
 
   if (!course || !user) throw new HttpError(404, 'Certificate data not found.');
-  if (!progress?.completedAt) throw new HttpError(409, 'Course is not completed.');\n  if (course.examEnabled) {\n    const passedExam = await ExamAttempt.exists({ userId, courseId: course._id, passed: true });\n    if (!passedExam) throw new HttpError(409, 'Pass the final exam before receiving a certificate.');\n  }
+  if (!progress?.completedAt) throw new HttpError(409, 'Course is not completed.');
+
+  if (course.examEnabled) {
+    const passedExam = await ExamAttempt.exists({ userId, courseId: course._id, passed: true });
+    if (!passedExam) throw new HttpError(409, 'Pass the final exam before receiving a certificate.');
+  }
 
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
