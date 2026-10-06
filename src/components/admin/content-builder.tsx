@@ -18,6 +18,7 @@ type Lesson = {
   resources?: LessonResourceDraft[];
   published: boolean;
   preview: boolean;
+  required?: boolean;
   durationSeconds?: number;
   order: number;
 };
