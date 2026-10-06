@@ -67,7 +67,7 @@ export function progressStats(
   lessons: Array<{ _id: unknown; required?: boolean }>,
   completedLessonIds: Array<unknown> = [],
 ) {
-  const lessonIds = lessons.map(lesson => String(lesson._id));
+  const lessonIds = lessons.filter(lesson => lesson.required !== false).map(lesson => String(lesson._id));
   const completed = new Set(completedLessonIds.map(String));
   const completedCount = lessonIds.filter(id => completed.has(id)).length;
   const percentage = lessonIds.length === 0 ? 0 : Math.round((completedCount / lessonIds.length) * 100);
