@@ -9,7 +9,6 @@ export function effectiveCoursePrice(course: { priceMinor: number; salePriceMino
   return course.salePriceMinor != null ? course.salePriceMinor : course.priceMinor;
 }
 
-
 export async function enrollFreeCourse(
   userId: mongoose.Types.ObjectId,
   courseId: string,
@@ -38,7 +37,7 @@ export async function enrollFreeCourse(
 export async function createOrReuseOrder(
   userId: mongoose.Types.ObjectId,
   courseId: string,
-  paymentMethod: 'whish' | 'card' | 'usdt',
+  paymentMethod: 'whish' | 'card',
 ) {
   if (!mongoose.Types.ObjectId.isValid(courseId)) throw new HttpError(404, 'Course not found.');
 
