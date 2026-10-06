@@ -37,10 +37,9 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
     </div>
 
     <div className="panel checkout-panel">
-      <h2>{amount === 0 ? 'Free enrollment' : 'Choose payment method'}</h2>
+      <h2>{amount === 0 ? 'Free enrollment' : 'Payment'}</h2>
       <CheckoutForm courseId={String(course._id)} priceLabel={priceLabel} isFree={amount === 0} availability={{
         card: { enabled: methods.card.enabled, reason: methods.card.reason },
-        usdt: { enabled: methods.usdt.enabled },
       }} />
     </div>
   </section>;
