@@ -24,6 +24,12 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     const progress = await getCourseProgress(user._id, course._id);
     const completedIds = new Set((progress?.completedLessonIds ?? []).map(String));
     const stats = progressStats(tree.lessons, progress?.completedLessonIds ?? []);
+    if (user.role !== 'admin' && !progress?.completedAt) {
+      const firstIncompleteRequired = tree.lessons.findIndex(item => item.required !== false && !completedIds.has(String(item._id)));
+      if (firstIncompleteRequired >= 0 && lessonIndex > firstIncompleteRequired) {
+        redirect('/learn/' + course.slug + '/' + tree.lessons[firstIncompleteRequired]._id);
+      }
+    }
     const previous = lessonIndex > 0 ? tree.lessons[lessonIndex - 1] : null;
     const next = lessonIndex < tree.lessons.length - 1 ? tree.lessons[lessonIndex + 1] : null;
     const video = resolveVideoAsset(lesson.videoAssetId);
@@ -85,7 +91,13 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
 
         <div className="lesson-navigation">
           {previous ? <Link className="button secondary" href={'/learn/' + course.slug + '/' + previous._id}><svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="M10.5 3.5 6 8l4.5 4.5M6.5 8H13" /></svg> Previous</Link> : <span />}
-          {next ? <Link className="button" href={'/learn/' + course.slug + '/' + next._id}>Next lesson <svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="m5.5 3.5 4.5 4.5-4.5 4.5M3 8h6.5" /></svg></Link> : <Link className="button secondary" href="/dashboard">Back to dashboard</Link>}
+          {next
+            ? (completedIds.has(String(lesson._id)) || Boolean(progress?.completedAt)
+              ? <Link className="button" href={'/learn/' + course.slug + '/' + next._id}>Next lesson <svg className="ui-icon" viewBox="0 0 16 16" aria-hidden="true" fill="none"><path d="m5.5 3.5 4.5 4.5-4.5 4.5M3 8h6.5" /></svg></Link>
+              : <span className="button secondary" aria-disabled="true">Complete this lesson to continue</span>)
+            : (course.examEnabled && stats.percentage === 100
+              ? <Link className="button" href={'/learn/' + course.slug + '/exam'}>Take final exam</Link>
+              : <Link className="button secondary" href="/dashboard">Back to dashboard</Link>)}
         </div>
       </main>
     </div>;
