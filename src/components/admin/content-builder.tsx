@@ -261,7 +261,7 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
                       <strong>{lesson.title}</strong>
                       <small>
                         {lesson.published ? t('Published', 'منشور') : t('Draft', 'مسودة')}
-                        {lesson.preview ? ' · ' + t('Free preview', 'معاينة مجانية') : ''}
+                        {lesson.preview ? ' · ' + t('Free preview', 'معاينة مجانية') : ''}{lesson.required === false ? ' · ' + t('Bonus', 'إضافي') : ''}
                         {lesson.resources?.length ? ' · ' + lesson.resources.length + ' ' + t('resources', 'ملفات') : ''}
                       </small>
                     </div>
@@ -316,6 +316,7 @@ export function ContentBuilder({ courseId, initial }: { courseId: string; initia
               <div className="admin-form-grid">
                 <label className="checkbox"><input name="preview" type="checkbox" defaultChecked={(editor.item as Lesson | undefined)?.preview} /><span>{t('Free preview', 'معاينة مجانية')}</span></label>
                 <label className="checkbox"><input name="published" type="checkbox" defaultChecked={(editor.item as Lesson | undefined)?.published} /><span>{t('Published', 'منشور')}</span></label>
+                <label className="checkbox"><input name="required" type="checkbox" defaultChecked={(editor.item as Lesson | undefined)?.required !== false} /><span>{t('Required for completion', 'مطلوب لإكمال الدورة')}</span></label>
               </div>
             </div>
           </>}
