@@ -9,6 +9,6 @@ export async function POST(request:Request,{params}:{params:Promise<{courseId:st
  try{sameOrigin(request);const {courseId}=await params;const course=await Course.findOne({_id:courseId,published:true});if(!course)throw new HttpError(404,'Course not found.'); if(!course.waitlistEnabled||course.enrollmentOpen)throw new HttpError(409,'The waitlist is not open for this course.');
  const input=schema.parse(await readJson(request));const user=await currentUser();
  const item=await CourseWaitlist.findOneAndUpdate({courseId,email:input.email.toLowerCase()},{$set:{userId:user?._id,email:input.email.toLowerCase(),language:input.language,marketingConsent:input.marketingConsent}},{upsert:true,new:true,setDefaultsOnInsert:true});
- await FunnelEvent.create({userId:user?._id,courseId,event:'waitlist_joined',source:input.source,campaign:input.campaign});
+ await FunnelEvent.updateOne({event:'waitlist_joined',waitlistId:item._id},{$setOnInsert:{userId:user?._id,courseId,event:'waitlist_joined',waitlistId:item._id,source:input.source,campaign:input.campaign}},{upsert:true});
  return NextResponse.json({joined:true,id:String(item._id)});}catch(e){return errorResponse(e);}
 }
