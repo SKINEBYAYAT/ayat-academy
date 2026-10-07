@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Course, Enrollment, Lesson } from '@/lib/db/models/courses';
 import { currentUser } from '@/lib/auth/session';
 import { CheckoutButton } from '@/components/commerce/checkout-button';
+import { CourseReview } from '@/lib/db/models/growth';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +49,8 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
   }).lean() : null;
 
   const lessonCount = await Lesson.countDocuments({ courseId: course._id, published: true });
+  const reviews = await CourseReview.find({ courseId: course._id, removedAt: { $exists: false } }).sort({ createdAt: -1 }).select('rating comment studentName verifiedStudent createdAt').lean();
+  const reviewAverage = reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
   const price = course.salePriceMinor != null ? course.salePriceMinor : course.priceMinor;
   const courseImage = course.coverImage || course.thumbnail || '';
   const description = course.shortDescription || course.description || 'Professional skincare education.';
@@ -100,6 +103,8 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
         <section className="panel"><h2>Requirements</h2>{course.requirements?.length ? <ul>{course.requirements.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p>No special requirements.</p>}</section>
         <section className="panel"><h2>Instructor</h2><h3>{course.instructorName || 'Ayat'}</h3><p>{course.instructorBio || 'Professional skincare education by Ayat Academy.'}</p></section>
       </div>
+
+      <section className="panel"><h2>Student reviews</h2>{reviews.length ? <><p><strong>{reviewAverage.toFixed(1)} / 5</strong> · {reviews.length} verified review{reviews.length === 1 ? '' : 's'}</p><div className="student-course-grid">{reviews.map(review => <article className="student-course-card" key={String(review._id)}><div className="student-course-copy"><div className="status-row"><span className="status-badge published">Verified Student</span><span>{review.rating} / 5</span></div><h3>{review.studentName}</h3><p>{review.comment}</p></div></article>)}</div></> : <p>No student reviews yet. Reviews can only be submitted after completing the course.</p>}</section>
     </section>
   </>;
 }
