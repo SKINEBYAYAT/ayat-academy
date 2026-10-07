@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { BookOpen } from 'lucide-react';
 import { requirePageUser } from '@/lib/auth/session';
 import { listStudentCourses } from '@/lib/learning/service';
+import { ReviewForm } from '@/components/learning/review-form';
 
 export const metadata: Metadata = { title: 'Your learning space', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
@@ -47,6 +48,7 @@ export default async function Dashboard() {
                 <div className="student-progress-row"><span>{percentage}%</span><span>{lessonCount} lessons</span></div>
                 <div className="student-progress-bar"><i style={{ width: percentage + '%' }} /></div>
                 <div className="student-course-actions"><Link className="button small" href={href}>{percentage > 0 ? 'Continue learning' : 'Start course'}</Link>{certificate && <Link className="button secondary small" href={'/certificate/' + certificate.certificateId}>View certificate</Link>}</div>
+                {completed && <ReviewForm courseId={String(course._id)} />}
               </div>
             </article>;
           })}
