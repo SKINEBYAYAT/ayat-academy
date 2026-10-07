@@ -37,6 +37,10 @@ const deviceSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, required: true, index: true },
   authVersion: { type: Number, required: true },
   userAgentHash: { type: String, required: true },
+  deviceCategory: { type: String, enum: ['desktop', 'mobile'], default: 'desktop', index: true },
+  deviceLabel: { type: String, maxlength: 120 },
+  lastSeenAt: { type: Date, default: Date.now },
+  registeredAt: { type: Date, default: Date.now },
   expiresAt: { type: Date, required: true, expires: 0 },
 });
 export const TrustedDevice = (models.TrustedDevice as Model<InferSchemaType<typeof deviceSchema>>) || model('TrustedDevice', deviceSchema);
