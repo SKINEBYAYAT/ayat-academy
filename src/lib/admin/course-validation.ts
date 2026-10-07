@@ -23,6 +23,9 @@ export const courseInput = z.object({
   instructorBio: text(5000),
   estimatedMinutes: z.number().int().min(0).max(100_000).optional().nullable(),
   certificateEnabled: z.boolean().default(true),
+  waitlistEnabled: z.boolean().default(false),
+  enrollmentOpen: z.boolean().default(true),
+  launchAt: z.string().datetime().optional().nullable(),
   order: z.number().int().min(0).max(1_000_000).default(0),
 });
 
