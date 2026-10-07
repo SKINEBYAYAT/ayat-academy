@@ -5,6 +5,7 @@ import { currentUser } from '@/lib/auth/session';
 import { CheckoutButton } from '@/components/commerce/checkout-button';
 import { CourseReview } from '@/lib/db/models/growth';
 import { CourseViewTracker } from '@/components/analytics/course-view-tracker';
+import { WaitlistForm } from '@/components/commerce/waitlist-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +74,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
       '@type': 'Offer',
       price: (price / 100).toFixed(2),
       priceCurrency: course.currency,
-      availability: 'https://schema.org/InStock',
+      availability: course.enrollmentOpen ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
       url: new URL('/course/' + course.slug, siteUrl).toString(),
     },
     hasCourseInstance: {
@@ -94,7 +95,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
           <p>{description}</p>
           <div className="course-detail-meta"><span>{lessonCount} lessons</span>{course.estimatedMinutes ? <span>{Math.round(course.estimatedMinutes / 60)} hours</span> : null}{course.certificateEnabled && <span>Certificate on completion</span>}</div>
           <div className="course-detail-price">{course.salePriceMinor != null && <del>{(course.priceMinor / 100).toFixed(2)} {course.currency}</del>}<strong>{price === 0 ? 'Free' : (price / 100).toFixed(2) + ' ' + course.currency}</strong></div>
-          <CheckoutButton courseId={String(course._id)} slug={course.slug} signedIn={Boolean(user)} alreadyOwned={Boolean(enrollment)} />
+          {enrollment ? <CheckoutButton courseId={String(course._id)} slug={course.slug} signedIn={Boolean(user)} alreadyOwned /> : course.enrollmentOpen ? <CheckoutButton courseId={String(course._id)} slug={course.slug} signedIn={Boolean(user)} alreadyOwned={false} /> : course.waitlistEnabled ? <WaitlistForm courseId={String(course._id)} defaultEmail={user?.email ?? ''} /> : <div className="notice">Enrollment is currently closed.</div>}
         </div>
         <div className="course-detail-image">{courseImage ? <img src={courseImage} alt={course.title + ' course'} /> : <span>{course.title.slice(0, 1)}</span>}</div>
       </div>
