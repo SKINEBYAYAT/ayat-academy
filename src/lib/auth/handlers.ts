@@ -37,7 +37,7 @@ export async function register(data: unknown) {
   return NextResponse.json({ redirect: '/dashboard' });
 }
 
-export async function login(data: unknown, _request: Request) {
+export async function login(data: unknown, request: Request) {
   const input = loginSchema.parse(data);
   await rateLimit(`login:${input.email}`, 8);
   const user = await User.findOne({ email: input.email }).select('+passwordHash');
@@ -45,6 +45,15 @@ export async function login(data: unknown, _request: Request) {
   if (!user || !valid) throw new HttpError(401, 'Email or password is incorrect.');
 
   await createSession(user);
+  if(user.role!=='admin'){
+    const jar=await cookies();const existingToken=jar.get(deviceCookie)?.value;const ua=request.headers.get('user-agent')??'';const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(ua);const deviceCategory=mobile?'mobile':'desktop';
+    const existing=existingToken?await TrustedDevice.findOne({tokenHash:hashToken(existingToken),userId:user._id,authVersion:user.authVersion,deviceCategory,expiresAt:{$gt:new Date()}}):null;
+    if(!existing){
+      const active=await TrustedDevice.countDocuments({userId:user._id,deviceCategory,expiresAt:{$gt:new Date()}});
+      if(active>=1){const sessionToken=jar.get(sessionCookie)?.value;if(sessionToken)await Session.deleteOne({tokenHash:hashToken(sessionToken)});jar.set(sessionCookie,'',{...cookieOptions,maxAge:0});throw new HttpError(409,'A '+deviceCategory+' device is already registered. Open My Devices and contact support to replace it.');}
+      const token=newToken(),maxAge=60*60*24*30;await TrustedDevice.create({userId:user._id,authVersion:user.authVersion,tokenHash:hashToken(token),userAgentHash:hashToken(ua),deviceCategory,deviceLabel:mobile?'Mobile device':'Desktop / laptop',lastSeenAt:new Date(),registeredAt:new Date(),expiresAt:new Date(Date.now()+maxAge*1000)});jar.set(deviceCookie,token,{...cookieOptions,maxAge});
+    }
+  }
   return NextResponse.json({ redirect: user.role === 'admin' ? '/admin' : '/dashboard' });
 }
 
