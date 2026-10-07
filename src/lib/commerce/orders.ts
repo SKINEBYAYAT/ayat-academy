@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { Course, Enrollment } from '@/lib/db/models/courses';
 import { Order } from '@/lib/db/models/commerce';
 import { HttpError } from '@/lib/http';
+import { FunnelEvent } from '@/lib/db/models/growth';
 
 export function effectiveCoursePrice(course: { priceMinor: number; salePriceMinor?: number | null }) {
   return course.salePriceMinor != null ? course.salePriceMinor : course.priceMinor;
@@ -132,5 +133,10 @@ export async function markOrderPaidFromVerifiedProvider(
   order.paidAt = new Date();
   await order.save();
   await activateEnrollmentFromPaidOrder(order._id);
+  await FunnelEvent.updateOne(
+    { event: 'purchase', orderId: order._id },
+    { $setOnInsert: { userId: order.userId, courseId: order.courseId, event: 'purchase', orderId: order._id } },
+    { upsert: true },
+  );
   return order;
 }
