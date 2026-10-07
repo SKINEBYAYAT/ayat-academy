@@ -4,6 +4,7 @@ import { Course, Enrollment, Lesson } from '@/lib/db/models/courses';
 import { currentUser } from '@/lib/auth/session';
 import { CheckoutButton } from '@/components/commerce/checkout-button';
 import { CourseReview } from '@/lib/db/models/growth';
+import { CourseViewTracker } from '@/components/analytics/course-view-tracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,6 +84,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
   };
 
   return <>
+    <CourseViewTracker courseId={String(course._id)} />
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }} />
     <section className="course-detail">
       <div className="course-detail-hero">
