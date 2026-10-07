@@ -60,9 +60,14 @@ export async function verify(data: unknown, request: Request) {
   if (!user) throw new HttpError(400, 'Please sign in again.');
   await createSession(user);
   if (input.trustDevice && user.role !== 'admin') {
+    const ua=request.headers.get('user-agent') ?? '';
+    const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+    const deviceCategory=mobile?'mobile':'desktop';
+    const activeSameCategory=await TrustedDevice.countDocuments({userId:user._id,deviceCategory,expiresAt:{$gt:new Date()}});
+    if(activeSameCategory>=1) throw new HttpError(409, 'A '+deviceCategory+' device is already registered. Open My Devices and contact support to replace it.');
     const token = newToken();
     const maxAge = 60 * 60 * 24 * 30;
-    await TrustedDevice.create({ userId: user._id, authVersion: user.authVersion, tokenHash: hashToken(token), userAgentHash: hashToken(request.headers.get('user-agent') ?? ''), expiresAt: new Date(Date.now() + maxAge * 1000) });
+    await TrustedDevice.create({ userId: user._id, authVersion: user.authVersion, tokenHash: hashToken(token), userAgentHash: hashToken(ua), deviceCategory, deviceLabel: mobile ? 'Mobile device' : 'Desktop / laptop', lastSeenAt: new Date(), registeredAt: new Date(), expiresAt: new Date(Date.now() + maxAge * 1000) });
     (await cookies()).set(deviceCookie, token, { ...cookieOptions, maxAge });
   }
   return NextResponse.json({ redirect: user.role === 'admin' ? '/admin' : '/dashboard' });
