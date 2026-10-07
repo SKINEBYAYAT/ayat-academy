@@ -8,7 +8,7 @@ import { rateLimit } from './rate-limit';
 import { createSession, cookieOptions, deviceCookie, sessionCookie } from './session';
 import { HttpError } from '@/lib/http';
 
-export async function register(data: unknown) {
+export async function register(data: unknown, request: Request) {
   const input = registerSchema.parse(data);
   await rateLimit(`register:${input.email}`, 3);
   const existing = await User.findOne({ email: input.email });
@@ -34,6 +34,9 @@ export async function register(data: unknown) {
   }
 
   await createSession(user);
+  const ua=request.headers.get('user-agent')??'';const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(ua);const deviceCategory=mobile?'mobile':'desktop';const token=newToken(),maxAge=60*60*24*30;
+  await TrustedDevice.create({userId:user._id,authVersion:user.authVersion,tokenHash:hashToken(token),userAgentHash:hashToken(ua),deviceCategory,deviceLabel:mobile?'Mobile device':'Desktop / laptop',lastSeenAt:new Date(),registeredAt:new Date(),expiresAt:new Date(Date.now()+maxAge*1000)});
+  (await cookies()).set(deviceCookie,token,{...cookieOptions,maxAge});
   return NextResponse.json({ redirect: '/dashboard' });
 }
 
