@@ -30,7 +30,7 @@ export default async function Dashboard() {
           <h3>No courses yet.</h3>
           <p>Once you purchase a course or an administrator grants you access, it will appear here.</p>
         </div> : <div className="student-course-grid">
-          {courses.map(({ course, progress, percentage, completed, lessonCount, certificate }) => {
+          {courses.map(({ course, progress, percentage, completed, lessonCount, certificate, reviewEligible }) => {
             const href = progress?.currentLessonId
               ? '/learn/' + course.slug + '/' + progress.currentLessonId
               : '/learn/' + course.slug;
@@ -48,7 +48,7 @@ export default async function Dashboard() {
                 <div className="student-progress-row"><span>{percentage}%</span><span>{lessonCount} lessons</span></div>
                 <div className="student-progress-bar"><i style={{ width: percentage + '%' }} /></div>
                 <div className="student-course-actions"><Link className="button small" href={href}>{percentage > 0 ? 'Continue learning' : 'Start course'}</Link>{certificate && <Link className="button secondary small" href={'/certificate/' + certificate.certificateId}>View certificate</Link>}</div>
-                {completed && <ReviewForm courseId={String(course._id)} />}
+                {reviewEligible && <ReviewForm courseId={String(course._id)} />}
               </div>
             </article>;
           })}
