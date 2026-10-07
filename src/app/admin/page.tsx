@@ -70,6 +70,7 @@ export default async function Admin() {
           <Link className="button secondary" href="/admin/students">Manage students</Link>
           <Link className="button secondary" href="/admin/payments">Review payments</Link>
           <Link className="button secondary" href="/admin/settings">Payment settings</Link>
+          <Link className="button secondary" href="/admin/analytics">Growth analytics</Link>
         </div>
       </section>
 
