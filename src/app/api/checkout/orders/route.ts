@@ -4,6 +4,7 @@ import { requireUser } from '@/lib/auth/session';
 import { createOrReuseOrder, enrollFreeCourse } from '@/lib/commerce/orders';
 import { errorResponse, HttpError, readJson, sameOrigin } from '@/lib/http';
 import { getPaymentMethodState } from '@/lib/commerce/payment-methods';
+import { FunnelEvent } from '@/lib/db/models/growth';
 
 const schema = z.object({
   courseId: z.string().regex(/^[a-f\d]{24}$/i),
@@ -15,8 +16,10 @@ export async function POST(request: Request) {
     sameOrigin(request);
     const user = await requireUser();
     const input = schema.parse(await readJson(request));
+    await FunnelEvent.create({ userId: user._id, courseId: input.courseId, event: 'checkout_started' });
     if (!input.paymentMethod) {
       const result = await enrollFreeCourse(user._id, input.courseId);
+      await FunnelEvent.create({ userId: user._id, courseId: input.courseId, event: 'purchase' });
       return NextResponse.json({
         alreadyOwned: false,
         free: true,
