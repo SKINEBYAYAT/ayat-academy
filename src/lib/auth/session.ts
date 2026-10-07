@@ -27,9 +27,11 @@ export async function currentUser() {
   if (!session) return null;
   const deviceToken=jar.get(deviceCookie)?.value;
   if(deviceToken){
+    const now=new Date();
+    const staleBefore=new Date(now.getTime()-10*60*1000);
     await TrustedDevice.updateOne(
-      {tokenHash:hashToken(deviceToken),userId:session.userId,authVersion:session.authVersion,expiresAt:{$gt:new Date()}},
-      {$set:{lastSeenAt:new Date()}}
+      {tokenHash:hashToken(deviceToken),userId:session.userId,authVersion:session.authVersion,expiresAt:{$gt:now},$or:[{lastSeenAt:{$lt:staleBefore}},{lastSeenAt:{$exists:false}}]},
+      {$set:{lastSeenAt:now}}
     );
   }
   return User.findOne({ _id: session.userId, authVersion: session.authVersion, role: session.role, emailVerifiedAt: { $ne: null } });
