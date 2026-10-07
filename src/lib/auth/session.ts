@@ -2,7 +2,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { connectDB } from '@/lib/db/connect';
-import { Session, User, type UserData } from '@/lib/db/models/auth';
+import { Session, User, TrustedDevice, type UserData } from '@/lib/db/models/auth';
 import { hashToken, newToken } from './crypto';
 import { HttpError } from '@/lib/http';
 import type { Types } from 'mongoose';
@@ -19,11 +19,19 @@ export async function createSession(user: UserData & { _id: Types.ObjectId }) {
   jar.set(sessionCookie, token, { ...cookieOptions, maxAge: seconds });
 }
 export async function currentUser() {
-  const token = (await cookies()).get(sessionCookie)?.value;
+  const jar = await cookies();
+  const token = jar.get(sessionCookie)?.value;
   if (!token) return null;
   await connectDB();
   const session = await Session.findOne({ tokenHash: hashToken(token), expiresAt: { $gt: new Date() } });
   if (!session) return null;
+  const deviceToken=jar.get(deviceCookie)?.value;
+  if(deviceToken){
+    await TrustedDevice.updateOne(
+      {tokenHash:hashToken(deviceToken),userId:session.userId,authVersion:session.authVersion,expiresAt:{$gt:new Date()}},
+      {$set:{lastSeenAt:new Date()}}
+    );
+  }
   return User.findOne({ _id: session.userId, authVersion: session.authVersion, role: session.role, emailVerifiedAt: { $ne: null } });
 }
 export async function requireUser(admin = false) {
