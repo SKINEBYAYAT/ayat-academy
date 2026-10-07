@@ -8,7 +8,7 @@ type CourseDraft = {
   thumbnail?: string; coverImage?: string; priceMinor?: number; salePriceMinor?: number | null;
   currency?: string; published?: boolean; featured?: boolean; requirements?: string[];
   learningOutcomes?: string[]; instructorName?: string; instructorBio?: string;
-  estimatedMinutes?: number | null; certificateEnabled?: boolean; order?: number;
+  estimatedMinutes?: number | null; certificateEnabled?: boolean; waitlistEnabled?: boolean; enrollmentOpen?: boolean; launchAt?: string | Date | null; order?: number;
 };
 
 const slugify = (value: string) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -41,7 +41,8 @@ export function CourseForm({ initial, courseId }: { initial?: CourseDraft; cours
       featured: form.get('featured') === 'on', requirements: lines('requirements'),
       learningOutcomes: lines('learningOutcomes'), instructorName: form.get('instructorName'),
       instructorBio: form.get('instructorBio'), estimatedMinutes: Number(form.get('estimatedMinutes') || 0) || null,
-      certificateEnabled: true, order: Number(form.get('order') || 0),
+      certificateEnabled: true, waitlistEnabled: form.get('waitlistEnabled') === 'on', enrollmentOpen: form.get('enrollmentOpen') === 'on',
+      launchAt: String(form.get('launchAt') || '').trim() ? new Date(String(form.get('launchAt'))).toISOString() : null, order: Number(form.get('order') || 0),
     };
     try {
       const response = await fetch(courseId ? `/api/admin/courses/${courseId}` : '/api/admin/courses', {
@@ -129,7 +130,10 @@ export function CourseForm({ initial, courseId }: { initial?: CourseDraft; cours
       <div className="admin-form-grid">
         <label className="checkbox"><input name="published" type="checkbox" defaultChecked={initial?.published} /><span>{t('Published','منشورة')}</span></label>
         <label className="checkbox"><input name="featured" type="checkbox" defaultChecked={initial?.featured} /><span>{t('Featured','مميزة')}</span></label>
+        <label className="checkbox"><input name="enrollmentOpen" type="checkbox" defaultChecked={initial?.enrollmentOpen ?? true} /><span>{t('Enrollment open','التسجيل مفتوح')}</span></label>
+        <label className="checkbox"><input name="waitlistEnabled" type="checkbox" defaultChecked={initial?.waitlistEnabled} /><span>{t('Enable pre-launch waitlist','تفعيل قائمة الانتظار قبل الإطلاق')}</span></label>
       </div>
+      <label className="field">{t('Scheduled launch — optional','موعد الإطلاق — اختياري')}<input name="launchAt" type="datetime-local" defaultValue={initial?.launchAt ? new Date(initial.launchAt).toISOString().slice(0,16) : ''} /><small>{t('Used for pre-launch planning. Enrollment remains controlled by the Enrollment open switch.','يُستخدم للتخطيط قبل الإطلاق. فتح التسجيل يبقى تحت تحكم زر التسجيل مفتوح.')}</small></label>
       <label className="field small-field">{t('Display order','ترتيب الظهور')}
         <input name="order" type="number" min="0" defaultValue={initial?.order ?? 0} />
         <small>{t('0 appears first, then 1, 2, 3…','الرقم الأصغر يظهر أولاً.')}</small>
