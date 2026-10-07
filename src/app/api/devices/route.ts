@@ -1,0 +1,2 @@
+import {NextResponse} from 'next/server';import {requireUser} from '@/lib/auth/session';import {TrustedDevice} from '@/lib/db/models/auth';import {errorResponse} from '@/lib/http';
+export async function GET(){try{const user=await requireUser();const devices=await TrustedDevice.find({userId:user._id,expiresAt:{$gt:new Date()}}).select('deviceCategory deviceLabel lastSeenAt registeredAt expiresAt').sort({lastSeenAt:-1}).lean();return NextResponse.json({devices},{headers:{'Cache-Control':'no-store'}});}catch(e){return errorResponse(e);}}
