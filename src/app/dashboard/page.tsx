@@ -19,7 +19,7 @@ export default async function Dashboard() {
         <h1>Hello, {user.fullName.split(' ')[0]}.</h1>
         <p>Continue where you left off, or begin something new.</p>
       </div>
-      {user.role === 'admin' && <div className="actions"><Link className="button secondary small" href="/admin">Administration</Link></div>}
+      <div className="actions">{user.role === 'admin' && <Link className="button secondary small" href="/admin">Administration</Link>}<Link className="button secondary small" href="/devices">My devices</Link><Link className="button secondary small" href="/support">Support</Link></div>
     </div>
 
     <div className="workspace-grid single-column">
