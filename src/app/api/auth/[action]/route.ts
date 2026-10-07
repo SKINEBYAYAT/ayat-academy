@@ -15,7 +15,7 @@ export async function POST(request: Request, context: { params: Promise<{ action
     await rateLimit(`ip:${requestIp(request)}:${action}`, action === 'verify' ? 30 : 20);
     const data = await readJson(request);
     switch (action) {
-      case 'register': return await register(data);
+      case 'register': return await register(data, request);
       case 'login': return await login(data, request);
       case 'verify': return await verify(data, request);
       case 'forgot': return await forgot(data);
